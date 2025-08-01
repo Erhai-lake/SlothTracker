@@ -1,10 +1,11 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"net/http"
 	"sloth-tracker/api/model"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // 更新设备状态
@@ -12,7 +13,7 @@ func UpdateStatus(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deviceID := c.Param("device_id")
 		if deviceID == "" {
-			c.JSON(http.StatusBadRequest, gin.H{
+			c.JSON(http.StatusOK, gin.H{
 				"code":    1,
 				"message": "device_id 参数不能为空",
 			})
@@ -21,12 +22,12 @@ func UpdateStatus(db *gorm.DB) gin.HandlerFunc {
 
 		var req model.DeviceStatus
 		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"code": 1, "message": "参数错误"})
+			c.JSON(http.StatusOK, gin.H{"code": 1, "message": "参数错误"})
 			return
 		}
 
 		// 强制将 URL 参数中的 deviceID 设置进 req
-		req.ID = deviceID
+		req.Id = deviceID
 
 		var existing model.DeviceStatus
 		if err := db.Where("id = ?", deviceID).First(&existing).Error; err == nil {

@@ -23,7 +23,7 @@ export default {
 	methods: {
 		saveConfig() {
 			localStorage.setItem("config", JSON.stringify(this.form))
-			alert("配置已保存!")
+			this.$toast.success("配置已保存")
 		},
 		async writeOff() {
 			if (!confirm("确认注销吗?")) {
@@ -31,7 +31,11 @@ export default {
 			}
 			const RES = await axios.delete(`${this.form.serverUrl}/api/delete/${this.form.deviceId}`)
 			localStorage.removeItem("config")
-			alert(RES.data.message)
+			if (RES.data.code !== 0) {
+				this.$toast.warning(RES.data.message)
+				return
+			}
+			this.$toast.success(RES.data.message)
 			this.$router.push("/init")
 		}
 	}

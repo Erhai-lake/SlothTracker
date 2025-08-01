@@ -5,6 +5,7 @@ export default {
 	name: "App",
 	data() {
 		return {
+			sidebar: true,
 			config: {},
 			refreshInterval: 0
 		}
@@ -12,9 +13,11 @@ export default {
 	mounted() {
 		document.addEventListener("contextmenu", event => event.preventDefault())
 		EventBus.on("initConfig", this.initConfig)
+		EventBus.on("sidebarOpen", this.sidebarOpen)
 	},
 	beforeUnmount() {
 		EventBus.off("initConfig", this.initConfig)
+		EventBus.off("sidebarOpen", this.sidebarOpen)
 	},
 	created() {
 		this.refresh()
@@ -33,15 +36,19 @@ export default {
 		initConfig() {
 			const CONFIG = JSON.parse(localStorage.getItem("config"))
 			if (CONFIG === null) {
+				this.sidebar = false
 				this.$router.push("/init")
 			}
 			this.config = CONFIG || {}
 		},
 		async refresh() {
 			this.initConfig()
-			this.refreshInterval = Number(this.config.refreshInterval)
+			this.refreshInterval = Number(this.config.refreshInterval) || -1
 			EventBus.emit("refresh")
 			await window.go.main.App.UpdateStatus(this.config.serverUrl, this.config.deviceId)
+		},
+		sidebarOpen(open) {
+			this.sidebar = open
 		}
 	}
 }
@@ -49,12 +56,12 @@ export default {
 
 <template>
 	<div class="app">
-		<div class="sidebar-container">
+		<div class="sidebar-container" v-if="sidebar">
 			<router-link to="/">首页</router-link>
 			<router-link to="/config">设置</router-link>
 			<div></div>
 			<div @click="refresh">刷新</div>
-			<div>{{ refreshInterval === "-1" ? "禁用" : refreshInterval }}</div>
+			<div>{{ refreshInterval === -1 ? "禁用" : refreshInterval }}</div>
 		</div>
 		<div class="view">
 			<router-view/>
@@ -63,7 +70,7 @@ export default {
 	</div>
 </template>
 
-<style scoped>
+<style scoped lang="less">
 .app {
 	width: 100%;
 	height: 100vh;

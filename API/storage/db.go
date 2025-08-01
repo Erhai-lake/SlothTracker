@@ -12,6 +12,6 @@ func InitDB() *gorm.DB {
 	if err != nil {
 		log.Fatal("数据库初始化失败:", err)
 	}
-	db.AutoMigrate(&model.Device{}, &model.DeviceStatus{})
+	db.AutoMigrate(&model.User{}, &model.DeviceAccess{}, &model.Device{}, &model.DeviceStatus{})
 	return db
 }

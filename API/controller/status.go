@@ -26,7 +26,7 @@ func GetStatus(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deviceID := c.Param("device_id")
 		if deviceID == "" {
-			c.JSON(http.StatusBadRequest, gin.H{
+			c.JSON(http.StatusOK, gin.H{
 				"code":    1,
 				"message": "device_id 参数不能为空",
 			})

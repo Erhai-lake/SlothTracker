@@ -4,8 +4,23 @@ import (
 	"time"
 )
 
+type User struct {
+	Id           string    `gorm:"primaryKey;column:id" json:"id"` // 用户ID
+	Name         string    `json:"name"`                 // 用户名
+	Password     string    `json:"password"`             // 密码
+	RegisteredAt time.Time `json:"registered_at"`        // 注册时间
+}
+
+type DeviceAccess struct {
+	Id        string    `gorm:"primaryKey;column:id" json:"id"` // 唯一标识
+	DeviceId  string    `json:"device_id"`            // 被访问的设备
+	ViewerId  string    `json:"viewer_id"`            // 被授权的用户ID
+	CreatedAt time.Time `json:"created_at"`           // 创建时间
+}
+
 type Device struct {
-	ID           string    `gorm:"primaryKey;column:id"` // 唯一标识设备
+	Id           string    `gorm:"primaryKey;column:id" json:"id"` // 设备ID
+	OwnerId      string    `json:"owner_id"`             // 所属用户ID
 	Name         string    `json:"name"`                 // 设备名称
 	Platform     string    `json:"platform"`             // 设备平台(如: Android, iOS)
 	Description  string    `json:"description"`          // 设备描述
@@ -13,7 +28,7 @@ type Device struct {
 }
 
 type DeviceStatus struct {
-	ID        string `gorm:"primaryKey;column:id"` // 唯一标识设备
+	Id        string `gorm:"primaryKey;column:id" json:"id"` // 唯一标识设备
 	Timestamp int64  `json:"timestamp"`            // 上报时间戳(秒)
 
 	// 电池与充电
@@ -25,7 +40,7 @@ type DeviceStatus struct {
 
 	// 网络状态
 	WifiConnected     int     `json:"wifiConnected"`     // 是否连接 WiFi
-	WifiSSID          string  `json:"wifiSSID"`          // 当前连接的 WiFi 名称
+	WifiSSId          string  `json:"wifiSSId"`          // 当前连接的 WiFi 名称
 	MobileDataActive  int     `json:"mobileDataActive"`  // 是否启用流量
 	MobileSignalDbm   int     `json:"mobileSignalDbm"`   // 移动网络信号强度(单位 dBm)
 	NetworkType       string  `json:"networkType"`       // 当前网络类型(如: WiFi, 4G, 5G, Ethernet)
