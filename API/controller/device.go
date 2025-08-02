@@ -38,6 +38,30 @@ func RegisterDevice(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+// 修改设备信息 PUT
+func UpdateDeviceInfo(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req struct {
+			DeviceId    string `json:"deviceId"`
+			Name        string `json:"name"`
+			Platform    string `json:"platform"`
+			Description string `json:"description"`
+		}
+		// 校验参数
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusOK, gin.H{"code": 1, "message": "参数错误"})
+			return
+		}
+		// 更新设备信息
+		db.Where("id = ?", req.DeviceId).Updates(&model.Device{
+			Name:        req.Name,
+			Platform:    req.Platform,
+			Description: req.Description,
+		})
+		c.JSON(http.StatusOK, gin.H{"code": 0, "message": "设备信息更新成功"})
+	}
+}
+
 // 获取设备列表 GET
 func GetDeviceList(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -51,5 +75,25 @@ func GetDeviceList(db *gorm.DB) gin.HandlerFunc {
 		var devices []model.Device
 		db.Where("owner_id = ?", userId).Find(&devices)
 		c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询成功", "devices": devices})
+	}
+}
+
+// 获取设备信息 GET
+func GetDeviceInfo(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// 获取设备ID
+		deviceId := c.Param("device_id")
+		if deviceId == "" {
+			c.JSON(http.StatusOK, gin.H{"code": 1, "message": "参数错误"})
+			return
+		}
+		// 查询设备
+		var device model.Device
+		if err := db.Where("id = ?", deviceId).First(&device).Error; err != nil {
+			c.JSON(http.StatusOK, gin.H{"code": 1, "message": "设备不存在"})
+			return
+		}
+		// 返回设备信息
+		c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询成功", "device": device})
 	}
 }

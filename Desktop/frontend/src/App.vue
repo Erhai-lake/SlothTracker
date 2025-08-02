@@ -35,11 +35,18 @@ export default {
 	methods: {
 		initConfig() {
 			const CONFIG = JSON.parse(localStorage.getItem("config"))
-			if (CONFIG === null) {
-				this.sidebar = false
+			const REQUIRED_FIELDS = ["serverUrl", "refreshInterval", "userId", "deviceId"]
+			if (!CONFIG) {
 				this.$router.push("/init")
+				return
 			}
-			this.config = CONFIG || {}
+			for (const FIELD of REQUIRED_FIELDS) {
+				if (!CONFIG[FIELD]) {
+					this.$router.push("/init")
+					return
+				}
+			}
+			this.config = CONFIG
 		},
 		async refresh() {
 			this.initConfig()

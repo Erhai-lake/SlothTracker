@@ -25,10 +25,20 @@ export default {
 		}
 	},
 	created() {
+		EventBus.emit("sidebarOpen", false)
 		const CONFIG = JSON.parse(localStorage.getItem("config"))
-		if (CONFIG) {
-			this.$router.push("/")
+		const REQUIRED_FIELDS = ["serverUrl", "refreshInterval", "userId", "deviceId"]
+		if (!CONFIG) {
+			this.$router.push("/init")
+			return
 		}
+		for (const FIELD of REQUIRED_FIELDS) {
+			if (!CONFIG[FIELD]) {
+				this.$router.push("/init")
+				return
+			}
+		}
+		this.$router.push("/")
 	},
 	methods: {
 		// 测试服务器地址
@@ -125,10 +135,28 @@ export default {
 			}
 		},
 		// 保存设备ID
-		async saveDeviceId() {
+		async saveDeviceId(type = 1) {
 			if (this.deviceForm.deviceId === "") {
 				this.$toast.warning("请选择设备")
 				return
+			}
+			if (type === 2) {
+				try {
+					const RES = await axios.put(`${this.serverUrl}/api/device/update`, {
+						deviceId: this.deviceForm.deviceId,
+						name: this.deviceForm.name,
+						platform: this.deviceForm.platform,
+						description: this.deviceForm.description
+					})
+					if (RES.data.code !== 0) {
+						this.$toast.error(RES.data.message)
+						return
+					}
+				} catch (error) {
+					console.error(error)
+					this.$toast.error("保存设备平台错误")
+					return
+				}
 			}
 			let config = JSON.parse(localStorage.getItem("config"))
 			config = {
@@ -160,7 +188,7 @@ export default {
 				}
 				this.$toast.success(RES.data.message)
 				this.deviceForm.deviceId = RES.data.device_id
-				await this.saveDeviceId()
+				await this.saveDeviceId(2)
 			} catch (error) {
 				console.error(error)
 				this.$toast.error("注册设备错误")

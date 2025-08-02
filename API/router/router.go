@@ -37,8 +37,12 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 
 	// 设备注册
 	r.POST("/api/device/register", controller.RegisterDevice(db))
+	// 修改设备信息
+	r.PUT("/api/device/update", controller.UpdateDeviceInfo(db))
 	// 获取设备列表
 	r.GET("/api/devices/:user_id", controller.GetDeviceList(db))
+	// 获取设备信息
+	r.GET("/api/device/:device_id", controller.GetDeviceInfo(db))
 
 
 	// 状态更新
