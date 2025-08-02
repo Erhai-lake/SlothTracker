@@ -8,13 +8,19 @@ export default {
 		return {
 			process: "regular",
 			config: {},
+			deviceForm: {
+				deviceId: "",
+				name: "",
+				description: ""
+			},
+			writeOffDeviceConfirm: 1,
 			accountForm: {
 				oldName: "",
 				newName: "",
 				oldPassword: "",
 				newPassword: ""
 			},
-			writeOffAccountConfirm: 1
+			writeOffAccountConfirm: 1,
 			// form: {
 			// 	deviceId: "",
 			// 	deviceName: "",
@@ -26,9 +32,86 @@ export default {
 	},
 	created() {
 		this.config = JSON.parse(localStorage.getItem("config"))
+		this.getDeviceInfo()
 		this.getAccountInfo()
 	},
 	methods: {
+		// 获取设备信息
+		async getDeviceInfo() {
+			try {
+				const RES = await axios.get(`${this.config.serverUrl}/api/device/${this.config.deviceId}`)
+				if (RES.data.code !== 0) {
+					this.$toast.error(RES.data.message)
+					return
+				}
+				this.deviceForm.deviceId = RES.data.device.id
+				this.deviceForm.name = RES.data.device.name
+				this.deviceForm.description = RES.data.device.description
+			} catch (error) {
+				console.error(error)
+				this.$toast.error("获取设备信息错误")
+			}
+		},
+		// 保存设备信息
+		async saveDevice() {
+			if (this.deviceForm.name === "" || this.deviceForm.description === "") {
+				this.$toast.warning("请填写完整信息")
+				return
+			}
+			try {
+				const RES = await axios.put(`${this.config.serverUrl}/api/device/update`, {
+					deviceId: this.config.deviceId,
+					name: this.deviceForm.name,
+					platform: "windows",
+					description: this.deviceForm.description
+				})
+				if (RES.data.code !== 0) {
+					this.$toast.error(RES.data.message)
+					return
+				}
+				this.$toast.success(RES.data.message)
+			} catch (error) {
+				console.error(error)
+				this.$toast.error("保存设备信息错误")
+			}
+		},
+		// 注销设备
+		async writeOffDevice() {
+			if (this.writeOffDeviceConfirm === 1) {
+				this.writeOffDeviceConfirm = 2
+				this.$toast.warning("请再次点击确认是否继续注销, 3秒后重置注销状态")
+				this.$toast.error("注销账户后将删除当前设备的设备信息且无法恢复")
+				setTimeout(() => {
+					this.writeOffDeviceConfirm = 1
+				}, 3000)
+			} else if (this.writeOffDeviceConfirm === 2) {
+				this.$toast.clear()
+				try {
+					const RES = await axios.delete(`${this.config.serverUrl}/api/device/delete`, {
+						data: {
+							id: this.config.deviceId,
+						}
+					})
+					if (RES.data.code !== 0) {
+						this.$toast.error(RES.data.message)
+						return
+					}
+					this.$toast.success(RES.data.message)
+				} catch (error) {
+					console.error(error)
+					this.$toast.error("注销账设备错误")
+					return
+				}
+				const CONFIG = JSON.parse(localStorage.getItem("config"))
+				localStorage.setItem("config", JSON.stringify({
+					...CONFIG,
+					deviceId: ""
+				}))
+				this.$router.push("/init")
+				EventBus.emit("initConfig")
+				this.$toast.warning("感谢使用, 再见!")
+			}
+		},
 		// 获取账户信息
 		async getAccountInfo() {
 			try {
@@ -109,13 +192,13 @@ export default {
 					return
 				}
 				try {
-					const RES = await axios.delete(`${this.config.serverUrl}/api/user/delete`,{
+					const RES = await axios.delete(`${this.config.serverUrl}/api/user/delete`, {
 						data: {
 							id: this.config.userId,
 							password: this.accountForm.oldPassword
 						}
 					})
-					if (RES.data.code!== 0) {
+					if (RES.data.code !== 0) {
 						this.$toast.error(RES.data.message)
 						return
 					}
@@ -128,7 +211,6 @@ export default {
 				localStorage.removeItem("config")
 				this.$router.push("/init")
 				EventBus.emit("initConfig")
-				EventBus.emit("sidebarOpen", false)
 				this.$toast.warning("感谢使用, 再见!")
 			}
 		}
@@ -144,7 +226,24 @@ export default {
 			<p @click="process = 'account'">账户</p>
 		</div>
 		<div class="container" v-if="process === 'regular'">regular</div>
-		<div class="container" v-if="process === 'device'">device</div>
+		<div class="container" v-if="process === 'device'">
+			<div class="form-item">
+				<label>设备ID：</label>
+				<input v-model="deviceForm.deviceId" disabled style="color: white;"/>
+			</div>
+			<div class="form-item">
+				<label>设备名称：</label>
+				<input v-model="deviceForm.name" placeholder="请输入设备名"/>
+			</div>
+			<div class="form-item">
+				<label>描述：</label>
+				<input v-model="deviceForm.description" placeholder="请输入设备描述"/>
+			</div>
+			<div class="form-item-but">
+				<button @click="saveDevice">保存</button>
+				<button @click="writeOffDevice" style="--primary-color: #ff8080">注销设备</button>
+			</div>
+		</div>
 		<div class="container" v-if="process === 'account'">
 			<div class="form-item">
 				<label>账户名：</label>

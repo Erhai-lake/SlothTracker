@@ -43,12 +43,11 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	r.GET("/api/devices/:user_id", controller.GetDeviceList(db))
 	// 获取设备信息
 	r.GET("/api/device/:device_id", controller.GetDeviceInfo(db))
-
+	// 删除设备
+	r.DELETE("/api/device/delete", controller.DeleteDevice(db))
 
 	// 状态更新
 	r.POST("/api/update/:device_id", controller.UpdateStatus(db))
-	// 删除设备
-	r.DELETE("/api/delete/:device_id", controller.DeleteDevice(db))
 	// 获取状态列表
 	r.GET("/api/list", controller.ListStatus(db))
 	// 获取设备状态

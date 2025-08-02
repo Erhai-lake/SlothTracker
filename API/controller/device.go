@@ -97,3 +97,39 @@ func GetDeviceInfo(db *gorm.DB) gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询成功", "device": device})
 	}
 }
+
+// 注销设备 DELETE
+func DeleteDevice(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req struct {
+			Id       string `json:"id"`
+		}
+		// 校验参数
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusOK, gin.H{"code": 1, "message": "参数错误"})
+			return
+		}
+		// 查询设备
+		var device model.Device
+		if err := db.Where("id = ?", req.Id).First(&device).Error; err != nil {
+			c.JSON(http.StatusOK, gin.H{"code": 1, "message": "设备不存在"})
+			return
+		}
+		tx := db.Begin()
+		// 删除设备
+		if err := tx.Delete(&device).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"code": 4, "message": "设备注销失败-删除设备失败"})
+			return
+		}
+		// 删除设备状态
+		if err := tx.Where("id = ?", req.Id).Delete(&model.DeviceStatus{}).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"code": 5, "message": "设备注销失败-删除设备状态失败"})
+			return
+		}
+		// 提交事务
+		tx.Commit()
+		c.JSON(http.StatusOK, gin.H{"code": 0, "message": "注销成功"})
+	}
+}
