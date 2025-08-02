@@ -21,17 +21,22 @@ export default {
 		}
 	},
 	mounted() {
-		EventBus.on("refresh", this.getDevices)
+		EventBus.on("refresh", this.refresh)
 	},
 	beforeUnmount() {
-		EventBus.off("refresh", this.getDevices)
+		EventBus.off("refresh", this.refresh)
 	},
 	created() {
 		this.config = JSON.parse(localStorage.getItem("config"))
-		this.getDevice()
-		this.getAccountDevices()
+		this.refresh()
 	},
 	methods: {
+		// 刷新
+		refresh() {
+			this.getDevice()
+			this.getAccountDevices()
+			this.getShareDevices()
+		},
 		// 获取设备信息
 		async getDevice() {
 			try {
@@ -59,6 +64,21 @@ export default {
 				this.accountDevices = RES.data.devices
 			} catch (error) {
 				console.error(error)
+				this.$toast.error("获取设备信息错误")
+			}
+		},
+		// 获取共享设备
+		async getShareDevices() {
+			try {
+				const RES = await axios.get(`${this.config.serverUrl}/api/devices/shared/${this.config.userId}`)
+				if (RES.data.code !== 0) {
+					this.$toast.error(RES.data.message)
+					return
+				}
+				this.shareDevices = RES.data.devices
+			} catch (error) {
+				console.error(error)
+				this.$toast.error("获取设备信息错误")
 			}
 		}
 	}
@@ -81,8 +101,12 @@ export default {
 			<tabs-tab name="account">
 				<template #label>账户</template>
 				<div class="default" v-if="(accountDevices || []).length === 0">没有设备</div>
-				<div class="item" v-for="item in accountDevices" :key="item.ID">
-					<router-link :to="'/' + item.id" class="container">
+				<div class="item">
+					<router-link
+						class="container"
+						:to="'/' + item.id"
+						v-for="item in accountDevices"
+						:key="item.ID">
 						<p :title="item.name">{{ item.name }}</p>
 						<p :title="item.platform">{{ item.platform }}</p>
 						<p :title="item.description">{{ item.description }}</p>
@@ -92,8 +116,12 @@ export default {
 			<tabs-tab name="share">
 				<template #label>共享</template>
 				<div class="default" v-if="(shareDevices || []).length === 0">没有设备</div>
-				<div class="item" v-for="item in shareDevices" :key="item.ID">
-					<router-link :to="'/' + item.id" class="container">
+				<div class="item">
+					<router-link
+						class="container"
+						:to="'/' + item.id"
+						v-for="item in shareDevices"
+						:key="item.ID">
 						<p :title="item.name">{{ item.name }}</p>
 						<p :title="item.platform">{{ item.platform }}</p>
 						<p :title="item.description">{{ item.description }}</p>
@@ -104,7 +132,7 @@ export default {
 	</div>
 </template>
 
-<style scoped>
+<style scoped lang="less">
 .home {
 	padding: 16px;
 	margin: 16px;
@@ -141,17 +169,17 @@ export default {
 	border: 1px solid var(--border-color);
 	box-shadow: rgba(142, 142, 142, 0.2) 0 6px 15px 0;
 	border-radius: 10px;
-}
 
-.container:hover {
-	color: #000;
-	background-color: rgba(255, 255, 255, 0.4);
-}
+	&:hover {
+		color: #000;
+		background-color: rgba(255, 255, 255, 0.4);
+	}
 
-.container p {
-	text-align: center;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
+	p {
+		text-align: center;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 }
 </style>

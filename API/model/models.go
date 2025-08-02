@@ -6,30 +6,30 @@ import (
 
 type User struct {
 	Id           string    `gorm:"primaryKey;column:id" json:"id"` // 用户ID
-	Name         string    `json:"name"`                 // 用户名
-	Password     string    `json:"password"`             // 密码
-	RegisteredAt time.Time `json:"registered_at"`        // 注册时间
+	Name         string    `json:"name"`                           // 用户名
+	Password     string    `json:"password"`                       // 密码
+	RegisteredAt time.Time `json:"registered_at"`                  // 注册时间
 }
 
 type DeviceAccess struct {
 	Id        string    `gorm:"primaryKey;column:id" json:"id"` // 唯一标识
-	DeviceId  string    `json:"device_id"`            // 被访问的设备
-	ViewerId  string    `json:"viewer_id"`            // 被授权的用户ID
-	CreatedAt time.Time `json:"created_at"`           // 创建时间
+	DeviceId  string    `json:"device_id"`                      // 被访问的设备
+	ViewerId  string    `json:"viewer_id"`                      // 被授权的用户ID
+	CreatedAt time.Time `json:"created_at"`                     // 创建时间
 }
 
 type Device struct {
 	Id           string    `gorm:"primaryKey;column:id" json:"id"` // 设备ID
-	OwnerId      string    `json:"owner_id"`             // 所属用户ID
-	Name         string    `json:"name"`                 // 设备名称
-	Platform     string    `json:"platform"`             // 设备平台(如: Android, iOS)
-	Description  string    `json:"description"`          // 设备描述
-	RegisteredAt time.Time `json:"registered_at"`        // 注册时间
+	OwnerId      string    `json:"owner_id"`                       // 所属用户ID
+	Name         string    `json:"name"`                           // 设备名称
+	Platform     string    `json:"platform"`                       // 设备平台(如: Android, iOS)
+	Description  string    `json:"description"`                    // 设备描述
+	RegisteredAt time.Time `json:"registered_at"`                  // 注册时间
 }
 
 type DeviceStatus struct {
 	Id        string `gorm:"primaryKey;column:id" json:"id"` // 唯一标识设备
-	Timestamp int64  `json:"timestamp"`            // 上报时间戳(秒)
+	Timestamp int64  `json:"timestamp"`                      // 上报时间戳(秒)
 
 	// 电池与充电
 	BatteryCharging    int     `json:"batteryCharging"`    // 是否充电中

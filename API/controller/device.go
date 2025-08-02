@@ -78,6 +78,30 @@ func GetDeviceList(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+// 获取共享设备列表 GET
+func GetSharedDeviceList(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// 获取用户ID
+		userId := c.Param("user_id")
+		if userId == "" {
+			c.JSON(http.StatusOK, gin.H{"code": 1, "message": "参数错误"})
+			return
+		}
+		// 获取共享给用户的设备
+		var deviceAccesses []model.DeviceAccess
+		db.Where("viewer_id = ?", userId).Find(&deviceAccesses)
+		// 提取设备ID
+		var deviceIds []string
+		for _, access := range deviceAccesses {
+			deviceIds = append(deviceIds, access.DeviceId)
+		}
+		// 查询设备信息
+		var devices []model.Device
+		db.Where("id IN ?", deviceIds).Find(&devices)
+		c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询成功", "devices": devices})
+	}
+}
+
 // 获取设备信息 GET
 func GetDeviceInfo(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -102,7 +126,7 @@ func GetDeviceInfo(db *gorm.DB) gin.HandlerFunc {
 func DeleteDevice(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req struct {
-			Id       string `json:"id"`
+			Id string `json:"id"`
 		}
 		// 校验参数
 		if err := c.ShouldBindJSON(&req); err != nil {

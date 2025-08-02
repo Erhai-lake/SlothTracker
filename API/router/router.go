@@ -41,6 +41,8 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	r.PUT("/api/device/update", controller.UpdateDeviceInfo(db))
 	// 获取设备列表
 	r.GET("/api/devices/:user_id", controller.GetDeviceList(db))
+	// 获取共享设备列表
+	r.GET("/api/devices/shared/:user_id", controller.GetSharedDeviceList(db))
 	// 获取设备信息
 	r.GET("/api/device/:device_id", controller.GetDeviceInfo(db))
 	// 删除设备
