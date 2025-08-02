@@ -10,7 +10,8 @@ export default {
 			config: {},
 			regularForm: {
 				serverUrl: "",
-				refreshInterval: 5
+				refreshInterval: 5,
+				background: true
 			},
 			deviceForm: {
 				deviceId: "",
@@ -38,6 +39,7 @@ export default {
 		async getRegularInfo() {
 			this.regularForm.serverUrl = this.config.serverUrl
 			this.regularForm.refreshInterval = this.config.refreshInterval
+			this.regularForm.background = this.config.background
 		},
 		// 测试服务器地址
 		async ping() {
@@ -66,7 +68,8 @@ export default {
 			localStorage.setItem("config", JSON.stringify({
 				...this.config,
 				serverUrl: this.regularForm.serverUrl,
-				refreshInterval: this.regularForm.refreshInterval
+				refreshInterval: this.regularForm.refreshInterval,
+				background: this.regularForm.background
 			}))
 			this.$toast.success("保存成功")
 		},
@@ -268,6 +271,12 @@ export default {
 				<label>自动刷新时间(秒)：</label>
 				<input v-model="regularForm.refreshInterval"/>
 			</div>
+			<div class="form-item">
+				<label>
+					背景图开关：
+					<input type="checkbox" v-model="regularForm.background"/>
+				</label>
+			</div>
 			<div class="form-item-but">
 				<button @click="ping" style="--primary-color: #3ecd39">测试地址</button>
 				<button @click="saveRegular">保存</button>
@@ -358,6 +367,10 @@ export default {
 		width: 300px;
 		border: 1px solid #ccc;
 		border-radius: 4px;
+
+		&[type="checkbox"] {
+			width: auto;
+		}
 	}
 }
 

@@ -76,7 +76,8 @@ export default {
 			let config = JSON.parse(localStorage.getItem("config"))
 			config = {
 				...config,
-				refreshInterval: this.initForm.refreshInterval
+				refreshInterval: this.initForm.refreshInterval,
+				background: true
 			}
 			localStorage.setItem("config", JSON.stringify(config))
 			this.process = 'loginRegistration'

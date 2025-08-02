@@ -73,7 +73,7 @@ export default {
 		<div class="view">
 			<router-view/>
 		</div>
-		<div class="images"></div>
+		<div class="images" v-if="config.background"></div>
 	</div>
 </template>
 
