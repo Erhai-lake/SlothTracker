@@ -12,10 +12,11 @@ type User struct {
 }
 
 type DeviceAccess struct {
-	Id        string    `gorm:"primaryKey;column:id" json:"id"` // 唯一标识
-	DeviceId  string    `json:"device_id"`                      // 被访问的设备
-	ViewerId  string    `json:"viewer_id"`                      // 被授权的用户ID
-	CreatedAt time.Time `json:"created_at"`                     // 创建时间
+	Id            string    `gorm:"primaryKey;column:id" json:"id"` // 唯一标识
+	DeviceId      string    `json:"device_id"`                      // 被访问的设备
+	ViewerId      string    `json:"viewer_id"`                      // 被授权的用户ID
+	Authorization int       `json:"authorization"`                  // 是否授权(1: 已授权, 2: 未授权)
+	CreatedAt     time.Time `json:"created_at"`                     // 创建时间
 }
 
 type Device struct {

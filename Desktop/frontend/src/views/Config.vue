@@ -14,7 +14,6 @@ export default {
 				background: true
 			},
 			deviceForm: {
-				deviceId: "",
 				name: "",
 				description: ""
 			},
@@ -89,7 +88,6 @@ export default {
 					this.$toast.error(RES.data.message)
 					return
 				}
-				this.deviceForm.deviceId = RES.data.device.id
 				this.deviceForm.name = RES.data.device.name
 				this.deviceForm.description = RES.data.device.description
 			} catch (error) {
@@ -295,10 +293,7 @@ export default {
 			</div>
 		</div>
 		<div class="container" v-if="process === 'device'">
-			<div class="form-item">
-				<label>设备ID：</label>
-				<input v-model="deviceForm.deviceId" disabled style="color: white;"/>
-			</div>
+
 			<div class="form-item">
 				<label>设备名称：</label>
 				<input v-model="deviceForm.name" placeholder="请输入设备名"/>

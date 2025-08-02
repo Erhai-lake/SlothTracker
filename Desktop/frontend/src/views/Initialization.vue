@@ -306,16 +306,21 @@ h2 {
 		width: 300px;
 		border: 1px solid #ccc;
 		border-radius: 4px;
+
+		&[type="checkbox"] {
+			width: auto;
+		}
 	}
 }
 
 .form-item-but {
+	margin-bottom: 10px;
 	display: flex;
 	gap: 10px;
 
 	button {
-		width: 100%;
 		padding: 10px;
+		width: 100%;
 		background-color: var(--primary-color, #80ceff);
 		color: white;
 		border: none;

@@ -87,9 +87,9 @@ func GetSharedDeviceList(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusOK, gin.H{"code": 1, "message": "参数错误"})
 			return
 		}
-		// 获取共享给用户的设备
+		// 获取共享给用户的设备(以授权的设备)
 		var deviceAccesses []model.DeviceAccess
-		db.Where("viewer_id = ?", userId).Find(&deviceAccesses)
+		db.Where("viewer_id = ? AND Authorization = ?", userId, 1).Find(&deviceAccesses)
 		// 提取设备ID
 		var deviceIds []string
 		for _, access := range deviceAccesses {
