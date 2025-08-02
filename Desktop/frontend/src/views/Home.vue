@@ -1,12 +1,23 @@
 <script>
 import axios from "axios"
 import EventBus from "../services/EventBus.js"
+import Tabs from "../components/Tabs.vue"
+import TabsTab from "../components/TabsTab.vue"
 
 export default {
 	name: "Home",
+	components: {TabsTab, Tabs},
 	data() {
 		return {
-			devices: []
+			activeTab: "current",
+			config: {},
+			device: {
+				name: "",
+				platform: "",
+				description: ""
+			},
+			accountDevices: [],
+			shareDevices: []
 		}
 	},
 	mounted() {
@@ -16,14 +27,36 @@ export default {
 		EventBus.off("refresh", this.getDevices)
 	},
 	created() {
-		this.getDevices()
+		this.config = JSON.parse(localStorage.getItem("config"))
+		this.getDevice()
+		this.getAccountDevices()
 	},
 	methods: {
-		async getDevices() {
-			const CONFIG = JSON.parse(localStorage.getItem("config"))
+		// 获取设备信息
+		async getDevice() {
 			try {
-				const RES = await axios.get(`${CONFIG.serverUrl}/api/devices`)
-				this.devices = RES.data.devices
+				const RES = await axios.get(`${this.config.serverUrl}/api/device/${this.config.deviceId}`)
+				if (RES.data.code !== 0) {
+					this.$toast.error(RES.data.message)
+					return
+				}
+				this.device.name = RES.data.device.name
+				this.device.platform = RES.data.device.platform
+				this.device.description = RES.data.device.description
+			} catch (error) {
+				console.error(error)
+				this.$toast.error("获取设备信息错误")
+			}
+		},
+		// 获取账户设备
+		async getAccountDevices() {
+			try {
+				const RES = await axios.get(`${this.config.serverUrl}/api/devices/${this.config.userId}`)
+				if (RES.data.code !== 0) {
+					this.$toast.error(RES.data.message)
+					return
+				}
+				this.accountDevices = RES.data.devices
 			} catch (error) {
 				console.error(error)
 			}
@@ -34,24 +67,52 @@ export default {
 
 <template>
 	<div class="home">
-		<div class="default" v-if="(devices || []).length === 0">没有任何设备</div>
-		<div class="item">
-			<router-link
-				:to="'/' + item.ID"
-				class="container"
-				v-for="item in devices"
-				:key="item.ID">
-				<p :title="item.name">{{ item.name }}</p>
-				<p :title="item.platform">{{ item.platform }}</p>
-				<p :title="item.description">{{ item.description }}</p>
-			</router-link>
-		</div>
+		<tabs v-model="activeTab">
+			<tabs-tab name="current">
+				<template #label>当前</template>
+				<div class="item">
+					<router-link :to="'/' + this.config.deviceId" class="container">
+						<p :title="device.name">{{ device.name }}</p>
+						<p :title="device.platform">{{ device.platform }}</p>
+						<p :title="device.description">{{ device.description }}</p>
+					</router-link>
+				</div>
+			</tabs-tab>
+			<tabs-tab name="account">
+				<template #label>账户</template>
+				<div class="default" v-if="(accountDevices || []).length === 0">没有设备</div>
+				<div class="item" v-for="item in accountDevices" :key="item.ID">
+					<router-link :to="'/' + item.id" class="container">
+						<p :title="item.name">{{ item.name }}</p>
+						<p :title="item.platform">{{ item.platform }}</p>
+						<p :title="item.description">{{ item.description }}</p>
+					</router-link>
+				</div>
+			</tabs-tab>
+			<tabs-tab name="share">
+				<template #label>共享</template>
+				<div class="default" v-if="(shareDevices || []).length === 0">没有设备</div>
+				<div class="item" v-for="item in shareDevices" :key="item.ID">
+					<router-link :to="'/' + item.id" class="container">
+						<p :title="item.name">{{ item.name }}</p>
+						<p :title="item.platform">{{ item.platform }}</p>
+						<p :title="item.description">{{ item.description }}</p>
+					</router-link>
+				</div>
+			</tabs-tab>
+		</tabs>
 	</div>
 </template>
 
 <style scoped>
 .home {
 	padding: 16px;
+	margin: 16px;
+	background-color: rgba(0, 0, 0, 0.4);
+	backdrop-filter: blur(5px);
+	border: 1px solid var(--border-color);
+	box-shadow: rgba(142, 142, 142, 0.2) 0 6px 15px 0;
+	border-radius: 10px;
 }
 
 .default {
