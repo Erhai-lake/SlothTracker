@@ -75,7 +75,7 @@ func LoginUser(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-// 重置用户名 POST
+// 重置用户名 PUT
 func ResetUsername(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req struct {
@@ -105,7 +105,7 @@ func ResetUsername(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-// 重置密码 POST
+// 重置密码 PUT
 func ResetPassword(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req struct {
@@ -129,10 +129,15 @@ func ResetPassword(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusOK, gin.H{"code": 3, "message": "旧密码错误"})
 			return
 		}
+		// 检查新密码是否和旧密码一致
+		if req.OldPassword == req.NewPassword {
+			c.JSON(http.StatusOK, gin.H{"code": 4, "message": "新密码不能和旧密码相同"})
+			return
+		}
 		// 加密新密码
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"code": 4, "message": "新密码加密失败"})
+			c.JSON(http.StatusInternalServerError, gin.H{"code": 5, "message": "新密码加密失败"})
 			return
 		}
 		// 更新密码
@@ -156,7 +161,7 @@ func GetUserInfo(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusOK, gin.H{"code": 2, "message": "用户不存在"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"code": 0, "user": gin.H{
+		c.JSON(http.StatusOK, gin.H{"code": 0, "message": "获取用户信息成功", "user": gin.H{
 			"id":           user.Id,
 			"name":         user.Name,
 			"registeredAt": user.RegisteredAt,
@@ -192,20 +197,30 @@ func DeleteUser(db *gorm.DB) gin.HandlerFunc {
 		// 删除用户
 		if err := tx.Delete(&user).Error; err != nil {
 			tx.Rollback()
-			c.JSON(http.StatusInternalServerError, gin.H{"code": 4, "message": "用户注销失败"})
+			c.JSON(http.StatusInternalServerError, gin.H{"code": 4, "message": "用户注销失败-删除用户失败"})
 			return
 		}
-		// 删除用户相关的设备和状态
-		// if err := tx.Where("user_id = ?", req.Id).Delete(&model.Device{}).Error; err != nil {
-		// 	tx.Rollback()
-		// 	c.JSON(http.StatusInternalServerError, gin.H{"code": 5, "message": "用户注销失败"})
-		// 	return
-		// }
-		// if err := tx.Where("user_id = ?", req.Id).Delete(&model.DeviceStatus{}).Error; err != nil {
-		// 	tx.Rollback()
-		// 	c.JSON(http.StatusInternalServerError, gin.H{"code": 6, "message": "用户注销失败"})
-		// 	return
-		// }
+		// 获取用户有关的所有设备ID
+		var deviceIds []string
+		if err := tx.Model(&model.Device{}).
+			Where("owner_id = ?", req.Id).
+			Pluck("id", &deviceIds).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"code": 4, "message": "用户注销失败-获取设备ID失败"})
+			return
+		}
+		// 删除用户所有设备状态
+		if err := tx.Where("id IN ?", deviceIds).Delete(&model.DeviceStatus{}).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"code": 4, "message": "用户注销失败-删除设备状态失败"})
+			return
+		}
+		// 删除用户所有设备
+		if err := tx.Where("id IN ?", deviceIds).Delete(&model.Device{}).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"code": 4, "message": "用户注销失败-删除设备失败"})
+			return
+		}
 		// 提交事务
 		tx.Commit()
 		c.JSON(http.StatusOK, gin.H{"code": 0, "message": "用户注销成功"})

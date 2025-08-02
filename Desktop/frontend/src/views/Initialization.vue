@@ -219,7 +219,7 @@ export default {
 			</div>
 			<div class="form-item-but">
 				<button @click="saveDeviceId" style="--primary-color: #3ecd39">确定</button>
-				<button @click="process = 'selectDevice'">注册新的</button>
+				<button @click="process = 'registrationDevice'">注册新的</button>
 			</div>
 		</div>
 		<div class="container" v-if="process === 'registrationDevice'">
@@ -273,6 +273,7 @@ h2 {
 
 	input {
 		padding: 8px;
+		margin-top: 5px;
 		width: 300px;
 		border: 1px solid #ccc;
 		border-radius: 4px;

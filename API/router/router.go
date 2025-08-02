@@ -27,9 +27,9 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	// 用户登录
 	r.POST("/api/user/login", controller.LoginUser(db))
 	// 重置用户名
-	r.POST("/api/user/reset_name", controller.ResetUsername(db))
+	r.PUT("/api/user/reset_name", controller.ResetUsername(db))
 	// 重置密码
-	r.POST("/api/user/reset_password", controller.ResetPassword(db))
+	r.PUT("/api/user/reset_password", controller.ResetPassword(db))
 	// 获取用户信息
 	r.GET("/api/user/:user_id", controller.GetUserInfo(db))
 	// 注销用户
