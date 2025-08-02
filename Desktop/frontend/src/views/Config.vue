@@ -73,6 +73,14 @@ export default {
 			}))
 			this.$toast.success("保存成功")
 		},
+		// 刷新页面
+		refresh() {
+			location.reload()
+		},
+		// 重置设置
+		reset() {
+			localStorage.removeItem("config")
+		},
 		// 获取设备信息
 		async getDeviceInfo() {
 			try {
@@ -281,6 +289,10 @@ export default {
 				<button @click="ping" style="--primary-color: #3ecd39">测试地址</button>
 				<button @click="saveRegular">保存</button>
 			</div>
+			<div class="form-item-but">
+				<button @click="refresh">刷新页面</button>
+				<button @click="resetConfig" style="--primary-color: #ff8080">重置设置</button>
+			</div>
 		</div>
 		<div class="container" v-if="process === 'device'">
 			<div class="form-item">
@@ -375,12 +387,13 @@ export default {
 }
 
 .form-item-but {
+	margin-bottom: 10px;
 	display: flex;
 	gap: 10px;
 
 	button {
-		width: 100%;
 		padding: 10px;
+		width: 100%;
 		background-color: var(--primary-color, #80ceff);
 		color: white;
 		border: none;
