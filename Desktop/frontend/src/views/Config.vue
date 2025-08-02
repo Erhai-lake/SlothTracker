@@ -8,6 +8,10 @@ export default {
 		return {
 			process: "regular",
 			config: {},
+			regularForm: {
+				serverUrl: "",
+				refreshInterval: 5
+			},
 			deviceForm: {
 				deviceId: "",
 				name: "",
@@ -20,22 +24,52 @@ export default {
 				oldPassword: "",
 				newPassword: ""
 			},
-			writeOffAccountConfirm: 1,
-			// form: {
-			// 	deviceId: "",
-			// 	deviceName: "",
-			// 	description: "",
-			// 	serverUrl: "",
-			// 	refreshInterval: 5
-			// }
+			writeOffAccountConfirm: 1
 		}
 	},
 	created() {
 		this.config = JSON.parse(localStorage.getItem("config"))
+		this.getRegularInfo()
 		this.getDeviceInfo()
 		this.getAccountInfo()
 	},
 	methods: {
+		// 获取常规信息
+		async getRegularInfo() {
+			this.regularForm.serverUrl = this.config.serverUrl
+			this.regularForm.refreshInterval = this.config.refreshInterval
+		},
+		// 测试服务器地址
+		async ping() {
+			if (this.regularForm.serverUrl === "") {
+				this.$toast.warning("请填写完整信息")
+				return
+			}
+			try {
+				const RES = await axios.get(`${this.regularForm.serverUrl}/api/ping`)
+				if (RES.data.code !== 0) {
+					this.$toast.error("服务器地址错误")
+					return
+				}
+				this.$toast.success(`服务器延迟: ${RES.data.message}`)
+			} catch (error) {
+				console.error(error)
+				this.$toast.error("服务器地址错误")
+			}
+		},
+		// 保存常规信息
+		async saveRegular() {
+			if (this.regularForm.serverUrl === "" || this.regularForm.refreshInterval === "") {
+				this.$toast.warning("请填写完整信息")
+				return
+			}
+			localStorage.setItem("config", JSON.stringify({
+				...this.config,
+				serverUrl: this.regularForm.serverUrl,
+				refreshInterval: this.regularForm.refreshInterval
+			}))
+			this.$toast.success("保存成功")
+		},
 		// 获取设备信息
 		async getDeviceInfo() {
 			try {
@@ -225,7 +259,20 @@ export default {
 			<p @click="process = 'device'">设备</p>
 			<p @click="process = 'account'">账户</p>
 		</div>
-		<div class="container" v-if="process === 'regular'">regular</div>
+		<div class="container" v-if="process === 'regular'">
+			<div class="form-item">
+				<label>服务器地址：</label>
+				<input v-model="regularForm.serverUrl"/>
+			</div>
+			<div class="form-item">
+				<label>自动刷新时间(秒)：</label>
+				<input v-model="regularForm.refreshInterval"/>
+			</div>
+			<div class="form-item-but">
+				<button @click="ping" style="--primary-color: #3ecd39">测试地址</button>
+				<button @click="saveRegular">保存</button>
+			</div>
+		</div>
 		<div class="container" v-if="process === 'device'">
 			<div class="form-item">
 				<label>设备ID：</label>
@@ -259,33 +306,6 @@ export default {
 				<button @click="writeOffAccount" style="--primary-color: #ff8080">注销账户</button>
 			</div>
 		</div>
-
-		<!--		<div class="container">-->
-		<!--			<div class="form-item">-->
-		<!--				<label>设备ID：</label>-->
-		<!--				<input v-model="form.deviceId" disabled style="color: white;"/>-->
-		<!--			</div>-->
-		<!--			<div class="form-item">-->
-		<!--				<label>设备名称：</label>-->
-		<!--				<input v-model="form.deviceName" placeholder="请输入设备名"/>-->
-		<!--			</div>-->
-		<!--			<div class="form-item">-->
-		<!--				<label>描述：</label>-->
-		<!--				<input v-model="form.description" placeholder="请输入设备描述"/>-->
-		<!--			</div>-->
-		<!--			<div class="form-item">-->
-		<!--				<label>服务器地址：</label>-->
-		<!--				<input v-model="form.serverUrl" placeholder="例如：http://localhost:8080"/>-->
-		<!--			</div>-->
-		<!--			<div class="form-item">-->
-		<!--				<label>自动更新时间：</label>-->
-		<!--				<input v-model="form.refreshInterval" placeholder="请输入自动更新时间(-1 禁用)"/>-->
-		<!--			</div>-->
-		<!--			<div class="form-item-but">-->
-		<!--				<button @click="saveConfig">保存</button>-->
-		<!--				<button @click="writeOff" style="&#45;&#45;primary-color: #ff8080">注销</button>-->
-		<!--			</div>-->
-		<!--		</div>-->
 	</div>
 </template>
 
