@@ -65,6 +65,7 @@ export default {
 	<div class="app">
 		<div class="sidebar-container" v-if="sidebar">
 			<router-link to="/">首页</router-link>
+			<router-link to="/share">共享</router-link>
 			<router-link to="/config">设置</router-link>
 			<div></div>
 			<div @click="refresh">刷新</div>

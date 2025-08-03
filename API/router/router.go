@@ -35,6 +35,17 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	// 注销用户
 	r.DELETE("/api/user/delete", controller.DeleteUser(db))
 
+	// 共享申请
+	r.POST("/api/share/apply", controller.ApplyShare(db))
+	// 获取用户申请的授权
+	r.GET("/api/share/:user_id", controller.GetUserApplications(db))
+	// 获取共享授权列表
+	r.GET("/api/share/authorizations/:user_id", controller.GetSharedAuthorizations(db))
+	// 授权设备
+	r.PUT("/api/share/authorize", controller.AuthorizeDevice(db))
+	// 删除共享申请
+	r.DELETE("/api/share/delete", controller.DeleteShare(db))
+
 	// 设备注册
 	r.POST("/api/device/register", controller.RegisterDevice(db))
 	// 修改设备信息

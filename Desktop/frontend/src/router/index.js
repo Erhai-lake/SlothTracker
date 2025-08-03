@@ -11,6 +11,11 @@ const routes = [
 		name: "Device",
 		component: () => import("../views/Device.vue")
 	},
+	{
+		path: "/share",
+		name: "Share",
+		component: () => import("../views/Share.vue")
+	},
     {
         path: "/config",
         name: "Config",

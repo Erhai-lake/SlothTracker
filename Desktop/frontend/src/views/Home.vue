@@ -27,12 +27,12 @@ export default {
 		EventBus.off("refresh", this.refresh)
 	},
 	created() {
-		this.config = JSON.parse(localStorage.getItem("config"))
 		this.refresh()
 	},
 	methods: {
 		// 刷新
 		refresh() {
+			this.config = JSON.parse(localStorage.getItem("config"))
 			this.getDevice()
 			this.getAccountDevices()
 			this.getShareDevices()
@@ -101,7 +101,7 @@ export default {
 			<tabs-tab name="account">
 				<template #label>账户</template>
 				<div class="default" v-if="(accountDevices || []).length === 0">没有设备</div>
-				<div class="item">
+				<div class="item" v-else>
 					<router-link
 						class="container"
 						:to="'/' + item.id"
@@ -116,7 +116,7 @@ export default {
 			<tabs-tab name="share">
 				<template #label>共享</template>
 				<div class="default" v-if="(shareDevices || []).length === 0">没有设备</div>
-				<div class="item">
+				<div class="item" v-else>
 					<router-link
 						class="container"
 						:to="'/' + item.id"
