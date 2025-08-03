@@ -1,12 +1,15 @@
 <script>
 import axios from "axios"
 import EventBus from "../services/EventBus.js"
+import Tabs from "../components/Tabs.vue"
+import TabsTab from "../components/TabsTab.vue"
 
 export default {
 	name: "Config",
+	components: {TabsTab, Tabs},
 	data() {
 		return {
-			process: "regular",
+			activeTab: "regular",
 			config: {},
 			regularForm: {
 				serverUrl: "",
@@ -263,65 +266,70 @@ export default {
 
 <template>
 	<div class="config">
-		<div class="type">
-			<p @click="process = 'regular'">常规</p>
-			<p @click="process = 'device'">设备</p>
-			<p @click="process = 'account'">账户</p>
-		</div>
-		<div class="container" v-if="process === 'regular'">
-			<div class="form-item">
-				<label>服务器地址：</label>
-				<input v-model="regularForm.serverUrl"/>
-			</div>
-			<div class="form-item">
-				<label>自动刷新时间(秒)：</label>
-				<input v-model="regularForm.refreshInterval"/>
-			</div>
-			<div class="form-item">
-				<label>
-					背景图开关：
-					<input type="checkbox" v-model="regularForm.background"/>
-				</label>
-			</div>
-			<div class="form-item-but">
-				<button @click="ping" style="--primary-color: #3ecd39">测试地址</button>
-				<button @click="saveRegular">保存</button>
-			</div>
-			<div class="form-item-but">
-				<button @click="refresh">刷新页面</button>
-				<button @click="resetConfig" style="--primary-color: #ff8080">重置设置</button>
-			</div>
-		</div>
-		<div class="container" v-if="process === 'device'">
-
-			<div class="form-item">
-				<label>设备名称：</label>
-				<input v-model="deviceForm.name" placeholder="请输入设备名"/>
-			</div>
-			<div class="form-item">
-				<label>描述：</label>
-				<input v-model="deviceForm.description" placeholder="请输入设备描述"/>
-			</div>
-			<div class="form-item-but">
-				<button @click="saveDevice">保存</button>
-				<button @click="writeOffDevice" style="--primary-color: #ff8080">注销设备</button>
-			</div>
-		</div>
-		<div class="container" v-if="process === 'account'">
-			<div class="form-item">
-				<label>账户名：</label>
-				<input v-model="accountForm.newName" placeholder="请输入修改后的用户名"/>
-			</div>
-			<div class="form-item">
-				<label>重置密码：</label>
-				<input type="password" v-model="accountForm.oldPassword" placeholder="输入旧密码"/>
-				<input type="password" v-model="accountForm.newPassword" placeholder="输入新密码"/>
-			</div>
-			<div class="form-item-but">
-				<button @click="saveAccount">保存</button>
-				<button @click="writeOffAccount" style="--primary-color: #ff8080">注销账户</button>
-			</div>
-		</div>
+		<tabs v-model="activeTab" class="type">
+			<tabs-tab name="regular">
+				<template #label>常规</template>
+				<div class="container">
+					<div class="form-item">
+						<label>服务器地址：</label>
+						<input v-model="regularForm.serverUrl"/>
+					</div>
+					<div class="form-item">
+						<label>自动刷新时间(秒)：</label>
+						<input v-model="regularForm.refreshInterval"/>
+					</div>
+					<div class="form-item">
+						<label>
+							背景图开关：
+							<input type="checkbox" v-model="regularForm.background"/>
+						</label>
+					</div>
+					<div class="form-item-but">
+						<button @click="ping" style="--primary-color: #3ecd39">测试地址</button>
+						<button @click="saveRegular">保存</button>
+					</div>
+					<div class="form-item-but">
+						<button @click="refresh">刷新页面</button>
+						<button @click="resetConfig" style="--primary-color: #ff8080">重置设置</button>
+					</div>
+				</div>
+			</tabs-tab>
+			<tabs-tab name="device">
+				<template #label>设备</template>
+				<div class="container">
+					<div class="form-item">
+						<label>设备名称：</label>
+						<input v-model="deviceForm.name" placeholder="请输入设备名"/>
+					</div>
+					<div class="form-item">
+						<label>描述：</label>
+						<input v-model="deviceForm.description" placeholder="请输入设备描述"/>
+					</div>
+					<div class="form-item-but">
+						<button @click="saveDevice">保存</button>
+						<button @click="writeOffDevice" style="--primary-color: #ff8080">注销设备</button>
+					</div>
+				</div>
+			</tabs-tab>
+			<tabs-tab name="account">
+				<template #label>账户</template>
+				<div class="container">
+					<div class="form-item">
+						<label>账户名：</label>
+						<input v-model="accountForm.newName" placeholder="请输入修改后的用户名"/>
+					</div>
+					<div class="form-item">
+						<label>重置密码：</label>
+						<input type="password" v-model="accountForm.oldPassword" placeholder="输入旧密码"/>
+						<input type="password" v-model="accountForm.newPassword" placeholder="输入新密码"/>
+					</div>
+					<div class="form-item-but">
+						<button @click="saveAccount">保存</button>
+						<button @click="writeOffAccount" style="--primary-color: #ff8080">注销账户</button>
+					</div>
+				</div>
+			</tabs-tab>
+		</tabs>
 	</div>
 </template>
 
@@ -338,18 +346,11 @@ export default {
 
 .type {
 	padding: 10px;
-	margin-bottom: 12px;
 	background-color: rgba(0, 0, 0, 0.4);
 	backdrop-filter: blur(5px);
 	border: 1px solid var(--border-color);
 	box-shadow: rgba(142, 142, 142, 0.2) 0 6px 15px 0;
 	border-radius: 10px;
-	display: flex;
-	gap: 15px;
-
-	p {
-		cursor: pointer;
-	}
 }
 
 .container {
