@@ -51,8 +51,8 @@ export default {
 		async refresh() {
 			this.initConfig()
 			this.refreshInterval = Number(this.config.refreshInterval) || -1
-			EventBus.emit("refresh")
 			await window.go.main.App.UpdateStatus(this.config.serverUrl, this.config.deviceId)
+			EventBus.emit("refresh")
 		},
 		sidebarOpen(open) {
 			this.sidebar = open

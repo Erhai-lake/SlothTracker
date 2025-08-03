@@ -5,11 +5,11 @@ import (
 	"unsafe"
 )
 
-type OtherInfo struct {
-	ScreenOn         int `json:"screenOn"`         // 屏幕是否点亮
-	IsChargingViaUsb int `json:"isChargingViaUSB"` // 是否通过USB充电
-	IsChargingViaAC  int `json:"isChargingViaAC"`  // 是否通过AC充电
-	IsLowPowerMode   int `json:"isLowPowerMode"`   // 是否省电模式
+type OtherStatus struct {
+	ScreenOn         int `json:"screen_on"`           // 屏幕是否点亮(1: 点亮, 2: 未点亮)
+	IsChargingViaUSB int `json:"is_charging_via_usb"` // 是否通过USB充电(1: 是, 2: 否)
+	IsChargingViaAC  int `json:"is_charging_via_ac"`  // 是否通过AC插座充电(1: 是, 2: 否)
+	IsLowPowerMode   int `json:"is_low_power_mode"`   // 是否开启了省电模式(1: 开启, 2: 未开启)
 }
 
 type systemPowerStatus struct {
@@ -26,31 +26,33 @@ var (
 	procGetSystemPowerStatus = modkernel32.NewProc("GetSystemPowerStatus")
 )
 
-func GetOtherInfo() (OtherInfo, error) {
+func GetOtherInfo() (OtherStatus, error) {
 	var status systemPowerStatus
 	ret, _, err := procGetSystemPowerStatus.Call(uintptr(unsafe.Pointer(&status)))
 	if ret == 0 {
-		return OtherInfo{}, err
+		return OtherStatus{}, err
 	}
-	info := OtherInfo{}
+	info := OtherStatus{}
 	// 供电状态: 0=离线, 1=在线(AC), 255=未知
 	if status.ACLineStatus == 1 {
-		info.IsChargingViaAC = 2
-	} else {
 		info.IsChargingViaAC = 1
+	} else {
+		info.IsChargingViaAC = 2
 	}
 	// 判断是否为 USB 充电(不精确, Windows 无法直接识别 USB)
 	if status.ACLineStatus == 1 && status.BatteryFlag&8 != 0 {
-		info.IsChargingViaUsb = 2
+		info.IsChargingViaUSB = 1
 	} else {
-		info.IsChargingViaUsb = 1
+		info.IsChargingViaUSB = 2
 	}
 	// 省电模式: BatteryFlag 中 1=High, 2=Low, 4=Critical, 8=Charging, 128=No system battery
 	if status.BatteryFlag&2 != 0 || status.BatteryFlag&4 != 0 {
+		info.IsLowPowerMode = 1
+	} else {
 		info.IsLowPowerMode = 2
 	}
 	// 屏幕状态 Windows 无标准 API, 只能模拟或调用 DWM/PowerSettings API
 	// 默认假设屏幕亮着
-	info.ScreenOn = 2
+	info.ScreenOn = 1
 	return info, nil
 }

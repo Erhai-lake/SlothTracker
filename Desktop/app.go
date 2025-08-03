@@ -1,14 +1,12 @@
 package main
 
 import (
+	"Desktop/status"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"time"
-
-	"Desktop/status"
 )
 
 type App struct {
@@ -19,7 +17,7 @@ func NewApp() *App {
 }
 
 func (a *App) UpdateStatus(serverUrl string, deviceId string) string {
-	url := fmt.Sprintf("%s/api/update/%s", serverUrl, deviceId)
+	url := fmt.Sprintf("%s/api/status/update/%s", serverUrl, deviceId)
 	// 获取电池信息
 	batteryInfo, err := status.GetBatteryInfo()
 	if err != nil {
@@ -32,19 +30,11 @@ func (a *App) UpdateStatus(serverUrl string, deviceId string) string {
 		log.Printf("获取 WiFi 信息失败: %v", err)
 		return "获取 WiFi 信息失败"
 	}
-	// 获取移动数据信息
-	mobileDataInfo := status.GetMobileDataInfo()
-	// 获取速度信息
-	speedInfo, err := status.GetSpeedInfo()
-	if err != nil {
-		log.Printf("获取速度信息失败: %v", err)
-		return "获取速度信息失败"
-	}
 	// 获取应用信息
-	appInfo, err := status.GetAppInfo()
+	foregroundStatus, err := status.GetForegroundStatus()
 	if err != nil {
-		log.Printf("获取应用信息失败: %v", err)
-		return "获取应用信息失败"
+		log.Printf("获取前台状态失败: %v", err)
+		return "获取前台状态失败"
 	}
 	// 获取其他信息
 	otherInfo, err := status.GetOtherInfo()
@@ -54,26 +44,33 @@ func (a *App) UpdateStatus(serverUrl string, deviceId string) string {
 	}
 	// 构造 JSON Payload
 	data := map[string]any{
-		"timestamp":          time.Now().Unix(),
-		"batteryCharging":    batteryInfo.BatteryCharging,
-		"batteryLevel":       batteryInfo.BatteryLevel,
-		"batteryTemperature": batteryInfo.BatteryTemperature,
-		"batteryCapacity":    batteryInfo.BatteryCapacity,
-		"wifiConnected":      wifiInfo.WifiConnected,
-		"wifiSSID":           wifiInfo.WifiSSID,
-		"mobileDataActive":   mobileDataInfo.MobileDataActive,
-		"mobileSignalDbm":    mobileDataInfo.MobileSignalDbm,
-		"networkType":        mobileDataInfo.NetworkType,
-		"trafficUsedMB":      mobileDataInfo.TrafficUsedMB,
-		"uploadSpeedKbps":    speedInfo.UploadSpeedKbps,
-		"downloadSpeedKbps":  speedInfo.DownloadSpeedKbps,
-		"appName":            appInfo.AppName,
-		"appTitle":           appInfo.AppTitle,
-		"speakerPlaying":     appInfo.SpeakerPlaying,
-		"screenOn":           otherInfo.ScreenOn,
-		"isChargingViaUsb":   otherInfo.IsChargingViaUsb,
-		"isChargingViaAC":    otherInfo.IsChargingViaAC,
-		"isLowPowerMode":     otherInfo.IsLowPowerMode,
+		"battery": map[string]any{
+			"charging":    batteryInfo.Charging,
+			"level":       batteryInfo.Level,
+			"temperature": batteryInfo.Temperature,
+			"capacity":    batteryInfo.Capacity,
+		},
+		"network": map[string]any{
+			"wifi_connected":      wifiInfo.WifiConnected,
+			"wifi_ssid":           wifiInfo.WifiSSId,
+			"mobile_data_active":  wifiInfo.MobileDataActive,
+			"mobile_signal_dbm":   wifiInfo.MobileSignalDbm,
+			"network_type":        wifiInfo.NetworkType,
+			"traffic_used_mb":     wifiInfo.TrafficUsedMB,
+			"upload_speed_kbps":   wifiInfo.UploadSpeedKbps,
+			"download_speed_kbps": wifiInfo.DownloadSpeedKbps,
+		},
+		"foreground": map[string]any{
+			"app_name":        foregroundStatus.AppName,
+			"app_title":       foregroundStatus.AppTitle,
+			"speaker_playing": foregroundStatus.SpeakerPlaying,
+		},
+		"other": map[string]any{
+			"screen_on":           otherInfo.ScreenOn,
+			"is_charging_via_usb": otherInfo.IsChargingViaUSB,
+			"is_charging_via_ac":  otherInfo.IsChargingViaAC,
+			"is_low_power_mode":   otherInfo.IsLowPowerMode,
+		},
 	}
 	jsonData, err := json.Marshal(data)
 	if err != nil {
@@ -81,7 +78,7 @@ func (a *App) UpdateStatus(serverUrl string, deviceId string) string {
 		return "JSON 编码失败"
 	}
 	// 构造请求
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Printf("请求创建失败: %v", err)
 		return "请求创建失败"

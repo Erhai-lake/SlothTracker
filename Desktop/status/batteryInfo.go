@@ -5,14 +5,14 @@ import (
 	"strings"
 )
 
-type BatteryInfo struct {
-	BatteryCharging    int     `json:"batteryCharging"`    // 1: 否, 2: 是
-	BatteryLevel       int     `json:"batteryLevel"`       // 电量百分比
-	BatteryTemperature float64 `json:"batteryTemperature"` // 暂无可靠通用 API, 返回 -1
-	BatteryCapacity    int     `json:"batteryCapacity"`    // 最大容量
+type BatteryStatus struct {
+	Charging    int     `json:"charging"`    // 是否充电中(1: 充电中, 2: 未充电, 3: 已充满)
+	Level       int     `json:"level"`       // 电池电量百分比(0~100)
+	Temperature float64 `json:"temperature"` // 电池温度(摄氏度)
+	Capacity    int     `json:"capacity"`    // 电池设计容量或总容量(单位mAh, 可选)
 }
 
-func GetBatteryInfo() (*BatteryInfo, error) {
+func GetBatteryInfo() (*BatteryStatus, error) {
 	batteries, err := battery.GetAll()
 	if err != nil || len(batteries) == 0 {
 		return nil, err
@@ -21,21 +21,21 @@ func GetBatteryInfo() (*BatteryInfo, error) {
 	b := batteries[0]
 
 	stateStr := strings.ToLower(b.State.String())
-	charging := 1
+	charging := 2
 	switch stateStr {
 	case "charging":
-		charging = 2
+		charging = 1
 	case "full":
 		charging = 3
 	}
 
 	level := int(b.Current / b.Full * 100)
 	capacity := int(b.Design)
-	info := &BatteryInfo{
-		BatteryCharging:    charging,
-		BatteryLevel:       level,
-		BatteryTemperature: -1,
-		BatteryCapacity:    capacity,
+	info := &BatteryStatus{
+		Charging:    charging,
+		Level:       level,
+		Temperature: -1,
+		Capacity:    capacity,
 	}
 
 	return info, nil

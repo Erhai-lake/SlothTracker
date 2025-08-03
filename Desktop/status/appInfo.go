@@ -12,10 +12,10 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-type AppInfo struct {
-	AppName        string `json:"appName"`        // 应用名称
-	AppTitle       string `json:"appTitle"`       // 应用标题
-	SpeakerPlaying int    `json:"speakerPlaying"` // 扬声器是否正在播放
+type ForegroundStatus struct {
+	AppName        string `json:"app_name"`        // 当前前台应用包名
+	AppTitle       string `json:"app_title"`       // 当前应用窗口标题
+	SpeakerPlaying int    `json:"speaker_playing"` // 是否有扬声器音频播放(1: 播放, 2: 未播放, 3: 未知)
 }
 
 var (
@@ -34,23 +34,23 @@ const PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
 const PROCESS_QUERY_INFORMATION = 0x0400
 const PROCESS_VM_READ = 0x0010
 
-func GetAppInfo() (AppInfo, error) {
+func GetForegroundStatus() (ForegroundStatus, error) {
 	switch runtime.GOOS {
 	case "windows":
-		return getWindowsAppInfo()
+		return getWindowsForegroundStatus()
 	case "darwin":
-		return getMacAppInfo()
+		return getMacForegroundStatus()
 	case "linux":
-		return getLinuxAppInfo()
+		return getLinuxForegroundStatus()
 	default:
-		return AppInfo{}, errors.New("unsupported platform")
+		return ForegroundStatus{}, errors.New("unsupported platform")
 	}
 }
 
-func getWindowsAppInfo() (AppInfo, error) {
+func getWindowsForegroundStatus() (ForegroundStatus, error) {
 	hwnd, _, _ := procGetForegroundWindow.Call()
 	if hwnd == 0 {
-		return AppInfo{}, errors.New("无法获取前台窗口句柄")
+		return ForegroundStatus{}, errors.New("无法获取前台窗口句柄")
 	}
 
 	// 获取窗口标题
@@ -63,14 +63,14 @@ func getWindowsAppInfo() (AppInfo, error) {
 	var pid uint32
 	_, _, _ = procGetWindowThreadProcessId.Call(hwnd, uintptr(unsafe.Pointer(&pid)))
 	if pid == 0 {
-		return AppInfo{}, errors.New("无法获取进程ID")
+		return ForegroundStatus{}, errors.New("无法获取进程ID")
 	}
 
 	// 打开进程句柄
 	handle, _, _ := procOpenProcess.Call(PROCESS_QUERY_INFORMATION|PROCESS_VM_READ, 0, uintptr(pid))
 	if handle == 0 {
 		errCode := windows.GetLastError()
-		return AppInfo{}, fmt.Errorf("无法打开进程句柄, 错误码: %d", errCode)
+		return ForegroundStatus{}, fmt.Errorf("无法打开进程句柄, 错误码: %d", errCode)
 	}
 	defer procCloseHandle.Call(handle)
 
@@ -78,24 +78,24 @@ func getWindowsAppInfo() (AppInfo, error) {
 	var procNameBuf [260]uint16
 	ret, _, _ = procGetModuleBaseNameW.Call(handle, 0, uintptr(unsafe.Pointer(&procNameBuf[0])), uintptr(len(procNameBuf)))
 	if ret == 0 {
-		return AppInfo{}, errors.New("无法获取进程名")
+		return ForegroundStatus{}, errors.New("无法获取进程名")
 	}
 	processName := syscall.UTF16ToString(procNameBuf[:ret])
 
-	return AppInfo{
+	return ForegroundStatus{
 		AppName:        processName,
 		AppTitle:       windowTitle,
-		SpeakerPlaying: -1,
+		SpeakerPlaying: 3,
 	}, nil
 }
 
-func getMacAppInfo() (AppInfo, error) {
+func getMacForegroundStatus() (ForegroundStatus, error) {
 	// 使用osascript获取前台应用名和窗口标题
 	cmdName := exec.Command("osascript", "-e",
 		`tell application "System Events" to get name of first application process whose frontmost is true`)
 	outName, err := cmdName.Output()
 	if err != nil {
-		return AppInfo{}, err
+		return ForegroundStatus{}, err
 	}
 	appName := strings.TrimSpace(string(outName))
 
@@ -103,30 +103,30 @@ func getMacAppInfo() (AppInfo, error) {
 		`tell application "System Events" to get value of attribute "AXTitle" of front window of first application process whose frontmost is true`)
 	outTitle, err := cmdTitle.Output()
 	if err != nil {
-		return AppInfo{}, err
+		return ForegroundStatus{}, err
 	}
 	appTitle := strings.TrimSpace(string(outTitle))
 
-	return AppInfo{
+	return ForegroundStatus{
 		AppName:        appName,
 		AppTitle:       appTitle,
-		SpeakerPlaying: -1,
+		SpeakerPlaying: 3,
 	}, nil
 }
 
-func getLinuxAppInfo() (AppInfo, error) {
+func getLinuxForegroundStatus() (ForegroundStatus, error) {
 	// 依赖xdotool, 获取活动窗口的窗口类和标题
 	cmdName := exec.Command("xdotool", "getactivewindow", "getwindowname")
 	outTitle, err := cmdName.Output()
 	if err != nil {
-		return AppInfo{}, err
+		return ForegroundStatus{}, err
 	}
 	title := strings.TrimSpace(string(outTitle))
 
 	// 取窗口标题做为appTitle, appName这里简单赋值为unknown
-	return AppInfo{
+	return ForegroundStatus{
 		AppName:        "unknown",
 		AppTitle:       title,
-		SpeakerPlaying: -1,
+		SpeakerPlaying: 3,
 	}, nil
 }

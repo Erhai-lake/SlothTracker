@@ -80,8 +80,9 @@ export default {
 			location.reload()
 		},
 		// 重置设置
-		reset() {
+		resetConfig() {
 			localStorage.removeItem("config")
+			location.reload()
 		},
 		// 获取设备信息
 		async getDeviceInfo() {
