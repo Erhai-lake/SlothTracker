@@ -1,12 +1,15 @@
 <script>
 import EventBus from "../services/EventBus.js"
 import axios from "axios"
+import Tabs from "../components/Tabs.vue"
+import TabsTab from "../components/TabsTab.vue"
 
 export default {
 	name: "Initialization",
+	components: {TabsTab, Tabs},
 	data() {
 		return {
-			process: "serverUrl",
+			activeTab: "serverUrl",
 			serverUrl: "",
 			initForm: {
 				refreshInterval: 5
@@ -25,22 +28,32 @@ export default {
 		}
 	},
 	created() {
-		EventBus.emit("sidebarOpen", false)
-		const CONFIG = JSON.parse(localStorage.getItem("config"))
-		const REQUIRED_FIELDS = ["serverUrl", "refreshInterval", "userId", "deviceId"]
-		if (!CONFIG) {
-			this.$router.push("/init")
-			return
-		}
-		for (const FIELD of REQUIRED_FIELDS) {
-			if (!CONFIG[FIELD]) {
+		this.init()
+	},
+	methods: {
+		// 初始化
+		init() {
+			EventBus.emit("sidebarOpen", false)
+			const CONFIG = JSON.parse(localStorage.getItem("config"))
+			const REQUIRED_FIELDS = [["serverUrl", "serverUrl"], ["refreshInterval", "init"], ["userId", "loginRegistration"], ["deviceId", "selectDevice"]]
+			if (!CONFIG) {
 				this.$router.push("/init")
 				return
 			}
-		}
-		this.$router.push("/")
-	},
-	methods: {
+			for (const FIELD of REQUIRED_FIELDS) {
+				if (!CONFIG[FIELD[0]]) {
+					this.$router.push("/init")
+					return
+				}
+			}
+			this.$router.push("/")
+			EventBus.emit("initConfig")
+			EventBus.emit("sidebarOpen", true)
+		},
+		// 完成
+		async complete() {
+			this.init()
+		},
 		// 测试服务器地址
 		async ping() {
 			if (this.serverUrl === "") {
@@ -65,7 +78,7 @@ export default {
 				serverUrl: this.serverUrl
 			}
 			localStorage.setItem("config", JSON.stringify(config))
-			this.process = 'init'
+			this.activeTab = "init"
 		},
 		// 初始化设置
 		async saveInit() {
@@ -80,7 +93,7 @@ export default {
 				background: true
 			}
 			localStorage.setItem("config", JSON.stringify(config))
-			this.process = 'loginRegistration'
+			this.activeTab = "loginRegistration"
 		},
 		// 登录注册
 		async loginRegistration(type) {
@@ -118,7 +131,7 @@ export default {
 				userId: userId
 			}
 			localStorage.setItem("config", JSON.stringify(config))
-			this.process = 'selectDevice'
+			this.activeTab = "selectDevice"
 			await this.getDevices()
 		},
 		// 获取设备列表
@@ -165,9 +178,7 @@ export default {
 				deviceId: this.deviceForm.deviceId
 			}
 			localStorage.setItem("config", JSON.stringify(config))
-			this.$router.push("/")
-			EventBus.emit("initConfig")
-			EventBus.emit("sidebarOpen", true)
+			this.complete()
 		},
 		// 注册设备
 		async registrationDevice() {
@@ -201,71 +212,100 @@ export default {
 
 <template>
 	<div class="initialization">
-		<div class="container" v-if="process === 'serverUrl'">
-			<h2>测试服务器地址</h2>
-			<div class="form-item">
-				<label>服务器地址：</label>
-				<input v-model="serverUrl" placeholder="例如：http://localhost:8080"/>
-			</div>
-			<div class="form-item-but">
-				<button @click="ping">测试并保存</button>
-			</div>
-		</div>
-		<div class="container" v-if="process === 'init'">
-			<h2>初始化设置</h2>
-			<div class="form-item">
-				<label>自动刷新时间(秒)：</label>
-				<input v-model="initForm.refreshInterval" placeholder="-1为禁用自动刷新"/>
-			</div>
-			<div class="form-item-but">
-				<button @click="saveInit">保存</button>
-			</div>
-		</div>
-		<div class="container" v-if="process === 'loginRegistration'">
-			<h2>登录注册</h2>
-			<div class="form-item">
-				<label>用户名：</label>
-				<input v-model="loginRegistrationForm.name" placeholder="请输入用户名"/>
-			</div>
-			<div class="form-item">
-				<label>密码：</label>
-				<input v-model="loginRegistrationForm.password" placeholder="请输入登录密码"/>
-			</div>
-			<div class="form-item-but">
-				<button @click="loginRegistration(1)" style="--primary-color: #3ecd39">登录</button>
-				<button @click="loginRegistration(2)">注册</button>
-			</div>
-		</div>
-		<div class="container" v-if="process === 'selectDevice'">
-			<h2>选择已有设备</h2>
-			<div class="form-item">
-				<select v-model="deviceForm.deviceId">
-					<option value="" disabled>请选择设备</option>
-					<option v-for="device in devices" :key="device.id" :value="device.id">
-						{{ device.name }}
-					</option>
-				</select>
-			</div>
-			<div class="form-item-but">
-				<button @click="saveDeviceId" style="--primary-color: #3ecd39">确定</button>
-				<button @click="process = 'registrationDevice'">注册新的</button>
-			</div>
-		</div>
-		<div class="container" v-if="process === 'registrationDevice'">
-			<h2>注册新设备</h2>
-			<div class="form-item">
-				<label>设备名称：</label>
-				<input v-model="deviceForm.name" placeholder="请输入设备名"/>
-			</div>
-			<div class="form-item">
-				<label>设备描述：</label>
-				<input v-model="deviceForm.description" placeholder="请输入设备描述"/>
-			</div>
-			<div class="form-item-but">
-				<button @click="registrationDevice" style="--primary-color: #3ecd39">注册</button>
-				<button @click="process = 'selectDevice'">选择已有设备</button>
-			</div>
-		</div>
+		<tabs v-model="activeTab" class="type">
+			<tabs-tab name="serverUrl">
+				<template #label>服务器地址</template>
+				<div class="container">
+					<h2>测试服务器地址</h2>
+					<div class="form-item">
+						<label>
+							服务器地址：
+							<input v-model="serverUrl" placeholder="例如：http://localhost:8080"/>
+						</label>
+					</div>
+					<div class="form-item-but">
+						<button @click="ping">测试并保存</button>
+					</div>
+				</div>
+			</tabs-tab>
+			<tabs-tab name="init">
+				<template #label>初始化设置</template>
+				<div class="container">
+					<h2>初始化设置</h2>
+					<div class="form-item">
+						<label>
+							自动刷新时间(秒)：
+							<input v-model="initForm.refreshInterval" placeholder="-1为禁用自动刷新"/>
+						</label>
+					</div>
+					<div class="form-item-but">
+						<button @click="saveInit">保存</button>
+					</div>
+				</div>
+			</tabs-tab>
+			<tabs-tab name="loginRegistration">
+				<template #label>登录注册</template>
+				<div class="container">
+					<h2>登录注册</h2>
+					<div class="form-item">
+						<label>
+							用户名：
+							<input v-model="loginRegistrationForm.name" placeholder="请输入用户名"/>
+						</label>
+					</div>
+					<div class="form-item">
+						<label>
+							密码：
+							<input v-model="loginRegistrationForm.password" placeholder="请输入登录密码"/>
+						</label>
+					</div>
+					<div class="form-item-but">
+						<button @click="loginRegistration(1)" style="--primary-color: #3ecd39">登录</button>
+						<button @click="loginRegistration(2)">注册</button>
+					</div>
+				</div>
+			</tabs-tab>
+			<tabs-tab name="selectDevice">
+				<template #label>选择已有设备</template>
+				<div class="container">
+					<h2>选择已有设备</h2>
+					<div class="form-item">
+						<select v-model="deviceForm.deviceId">
+							<option value="" disabled>请选择设备</option>
+							<option v-for="device in devices" :key="device.id" :value="device.id">
+								{{ device.name }}
+							</option>
+						</select>
+					</div>
+					<div class="form-item-but">
+						<button @click="saveDeviceId" style="--primary-color: #3ecd39">确定</button>
+						<button @click="activeTab = 'registrationDevice'">注册新的</button>
+					</div>
+				</div>
+			</tabs-tab>
+			<tabs-tab name="registrationDevice">
+				<template #label>注册新设备</template>
+				<div class="container">
+					<h2>注册新设备</h2>
+					<div class="form-item">
+						<label>
+							设备名称：
+							<input v-model="deviceForm.name" placeholder="请输入设备名"/>
+						</label>
+					</div>
+					<div class="form-item">
+						<label>
+							设备描述：
+							<input v-model="deviceForm.description" placeholder="请输入设备描述"/>
+						</label>
+					</div>
+					<div class="form-item-but">
+						<button @click="registrationDevice" style="--primary-color: #3ecd39">注册</button>
+						<button @click="activeTab = 'selectDevice'">选择已有设备</button>
+					</div>
+				</div>
+			</tabs-tab>
+		</tabs>
 	</div>
 </template>
 
@@ -277,6 +317,15 @@ export default {
 	display: flex;
 	justify-content: center;
 	align-items: center;
+}
+
+.type {
+	padding: 10px;
+	background-color: rgba(0, 0, 0, 0.4);
+	backdrop-filter: blur(5px);
+	border: 1px solid var(--border-color);
+	box-shadow: rgba(142, 142, 142, 0.2) 0 6px 15px 0;
+	border-radius: 10px;
 }
 
 .container {
