@@ -61,8 +61,6 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 
 	// 状态更新
 	r.POST("/api/update/:device_id", controller.UpdateStatus(db))
-	// 获取状态列表
-	r.GET("/api/list", controller.ListStatus(db))
 	// 获取设备状态
 	r.GET("/api/status/:device_id", controller.GetStatus(db))
 

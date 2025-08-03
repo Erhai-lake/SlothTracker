@@ -9,27 +9,36 @@ export default {
 		return {
 			route: useRoute(),
 			status: {
+				id: null,
+				device_id: null,
 				timestamp: null,
-				batteryCharging: null,
-				batteryLevel: null,
-				batteryTemperature: null,
-				batteryCapacity: null,
-				wifiConnected: null,
-				wifiSSID: null,
-				mobileDataActive: null,
-				mobileSignalDbm: null,
-				networkType: null,
-				uploadSpeedKbps: null,
-				downloadSpeedKbps: null,
-				trafficUsedMB: null,
-				appName: null,
-				appTitle: null,
-				speakerPlaying: null,
-				screenOn: null,
-				isChargingViaUSB: null,
-				isChargingViaAC: null,
-				isLowPowerMode: null,
-				isAirplaneMode: null
+				battery: {
+					charging: [],
+					level: null,
+					temperature: null,
+					capacity: null
+				},
+				network: {
+					wifiConnected: [],
+					wifiSSID: null,
+					mobileDataActive: [],
+					mobileSignalDbm: null,
+					networkType: null,
+					trafficUsedMb: null,
+					uploadSpeedKbps: null,
+					downloadSpeedKbps: null
+				},
+				foreground: {
+					appName: null,
+					appTitle: null,
+					speakerPlaying: [],
+				},
+				other: {
+					screenOn: [],
+					isChargingViaUSB: [],
+					isChargingViaAC: [],
+					isLowPowerMode: []
+				}
 			}
 		}
 	},
@@ -47,11 +56,76 @@ export default {
 			const CONFIG = JSON.parse(localStorage.getItem("config"))
 			try {
 				const RES = await axios.get(`${CONFIG.serverUrl}/api/status/${this.route.params.id}`)
-				this.status = RES.data.status
+				if (RES.data.code !== 0) {
+					this.$toast.error(RES.data.message)
+					return
+				}
+				// 原始数据
+				const ORIGINAL = this.$refs.original
+				ORIGINAL.innerHTML = JSON.stringify(RES.data, null, 2)
+				// 格式化后的数据
+				this.status = {
+					id: RES.data.status.id,
+					device_id: RES.data.status.device_id,
+					timestamp: RES.data.status.timestamp,
+					battery: {
+						charging: [
+							RES.data.status.battery.charging === 1 ? "充电中" : RES.data.status.battery.charging === 2 ? "未充电" : "已充满",
+							RES.data.status.battery.charging === 1 ? "yes" : RES.data.status.battery.charging === 2 ? "no" : ""
+						],
+						level: RES.data.status.battery.level + " %",
+						temperature: RES.data.status.battery.temperature + " ℃",
+						capacity: this.formatCapacity(RES.data.status.battery.capacity)
+					},
+					network: {
+						wifiConnected: [
+							RES.data.status.network.wifi_connected === 1 ? "已连接 ✅" : RES.data.status.network.wifi_connected === 2 ? "未连接 ❌" : "未知",
+							RES.data.status.network.wifi_connected === 1 ? "yes" : RES.data.status.network.wifi_connected === 2 ? "no" : ""
+						],
+						wifiSSID: RES.data.status.network.wifi_ssid,
+						mobileDataActive: [
+							RES.data.status.network.mobile_data_active === 1 ? "已激活 ✅" : RES.data.status.network.mobile_data_active === 2 ? "未激活 ❌" : "未知",
+							RES.data.status.network.mobile_data_active === 1 ? "yes" : RES.data.status.network.mobile_data_active === 2 ? "no" : ""
+						],
+						mobileSignalDbm: RES.data.status.network.mobile_signal_dbm + " dBm",
+						networkType: RES.data.status.network.network_type,
+						trafficUsedMb: this.formatTraffic(RES.data.status.network.traffic_used_mb),
+						uploadSpeedKbps: this.formatSpeed(RES.data.status.network.upload_speed_kbps),
+						downloadSpeedKbps: this.formatSpeed(RES.data.status.network.download_speed_kbps)
+					},
+					foreground: {
+						appName: RES.data.status.foreground.app_name,
+						appTitle: RES.data.status.foreground.app_title,
+						speakerPlaying: [
+							RES.data.status.foreground.speaker_playing === 1 ? "正在播放 ✅" : RES.data.status.foreground.speaker_playing === 2 ? "未播放 ❌" : "未知",
+							RES.data.status.foreground.speaker_playing === 1 ? "yes" : RES.data.status.foreground.speaker_playing === 2 ? "no" : ""
+						]
+					},
+					other: {
+						screenOn: [
+							RES.data.status.other.screen_on === 1 ? "屏幕已打开 ✅" : RES.data.status.other.screen_on === 2 ? "屏幕已关闭 ❌" : "未知",
+							RES.data.status.other.screen_on === 1 ? "yes" : RES.data.status.other.screen_on === 2 ? "no" : ""
+						],
+						isChargingViaUSB: [
+							RES.data.status.other.is_charging_via_usb === 1 ? "通过 USB 充电 ✅" : RES.data.status.other.is_charging_via_usb === 2 ? "未通过 USB 充电 ❌" : "未知",
+							RES.data.status.other.is_charging_via_usb === 1 ? "yes" : RES.data.status.other.is_charging_via_usb === 2 ? "no" : ""
+						],
+						isChargingViaAC: [
+							RES.data.status.other.is_charging_via_ac === 1 ? "通过 AC 充电 ✅" : RES.data.status.other.is_charging_via_ac === 2 ? "未通过 AC 充电 ❌" : "未知",
+							RES.data.status.other.is_charging_via_ac === 1 ? "yes" : RES.data.status.other.is_charging_via_ac === 2 ? "no" : ""
+						],
+						isLowPowerMode: [
+							RES.data.status.other.is_low_power_mode === 1 ? "低功耗模式 ✅" : RES.data.status.other.is_low_power_mode === 2 ? "非低功耗模式 ❌" : "未知",
+							RES.data.status.other.is_low_power_mode === 1 ? "yes" : RES.data.status.other.is_low_power_mode === 2 ? "no" : ""
+						]
+					}
+				}
 			} catch (error) {
 				console.error(error)
+				this.$toast.error("获取状态失败")
 			}
 		},
+		// 格式化时间戳
 		formatTimestamp(timestamp) {
 			const DATE = new Date(timestamp * 1000)
 			const YEAR = DATE.getFullYear()
@@ -107,119 +181,102 @@ export default {
 		<div class="status-grid">
 			<div class="status-card">
 				<div class="title">🔋 电池状态</div>
-				<p>
+				<p :title="status.battery.charging[0]">
 					<span class="item-title">充电状态: </span>
-					<span :class="{ no: status.batteryCharging === 1, yes: status.batteryCharging === 2 }"
-						  :title="status.batteryCharging === 1 ? '未充电' : status.batteryCharging === 2 ? '充电中' : '已充满'">
-						{{
-							status.batteryCharging === 1 ? "未充电" : status.batteryCharging === 2 ? "充电中" : "已充满"
-						}}
-					</span>
+					<span :class="status.battery.charging[1]">{{ status.battery.charging[0] }}</span>
 				</p>
-				<p :title="status.batteryLevel">
+				<p :title="status.battery.level">
 					<span class="item-title">电量: </span>
-					{{ status.batteryLevel }}%
+					<span>{{ status.battery.level }}</span>
 				</p>
-				<p :title="status.batteryTemperature">
+				<p :title="status.battery.temperature">
 					<span class="item-title">温度: </span>
-					{{ status.batteryTemperature }} ℃
+					<span>{{ status.battery.temperature }}</span>
 				</p>
-				<p :title="formatCapacity(status.batteryCapacity)">
+				<p :title="status.battery.capacity">
 					<span class="item-title">电池总容量: </span>
-					{{ formatCapacity(status.batteryCapacity) }}
+					<span>{{ status.battery.capacity }}</span>
 				</p>
 			</div>
 			<div class="status-card">
 				<div class="title">📶 网络状态</div>
-				<p>
+				<p :title="status.network.wifiConnected[0]">
 					<span class="item-title">WiFi: </span>
-					<span
-						:class="{ no: status.wifiConnected === 1, yes: status.wifiConnected === 2 }"
-						:title="status.wifiConnected === 1 ? '未连接' : '已连接'">
-						{{ status.wifiConnected === 1 ? "未连接 ❌" : "已连接 ✅" }}
-					</span>
+					<span :class="status.network.wifiConnected[1]">{{ status.network.wifiConnected[0] }}</span>
 				</p>
-				<p :title="status.wifiSSID">
+				<p :title="status.network.wifiSSID">
 					<span class="item-title">WiFi名称: </span>
-					{{ status.wifiSSID }}
+					<span>{{ status.network.wifiSSID }}</span>
 				</p>
 			</div>
 			<div class="status-card">
 				<div class="title">📶 流量状态</div>
-				<p>
+				<p :title="status.network.mobileDataActive[0]">
 					<span class="item-title">是否启用流量: </span>
-					<span
-						:class="{ no: status.mobileDataActive === 1, yes: status.mobileDataActive === 2 }"
-						:title="status.mobileDataActive === 1 ? '否' : '是'">
-						{{ status.mobileDataActive === 1 ? "否" : "是" }}
-					</span>
+					<span :class="status.network.mobileDataActive[1]">{{ status.network.mobileDataActive[0] }}</span>
 				</p>
-				<p :title="status.mobileSignalDbm">
+				<p :title="status.network.mobileSignalDbm">
 					<span class="item-title">移动网络信号强度: </span>
-					{{ status.mobileSignalDbm }} dBm
+					<span>{{ status.network.mobileSignalDbm }}</span>
 				</p>
 				<p :title="status.networkType">
 					<span class="item-title">网络类型: </span>
-					{{ status.networkType }}
+					<span>{{ status.network.networkType }}</span>
 				</p>
-				<p :title="formatTraffic(status.trafficUsedMB)">
+				<p :title="status.network.trafficUsedMb">
 					<span class="item-title">今日流量使用: </span>
-					{{ formatTraffic(status.trafficUsedMB) }}
+					<span>{{ status.network.trafficUsedMb }}</span>
 				</p>
 			</div>
 			<div class="status-card">
 				<div class="title">💨 网速状态</div>
-				<p :title="formatSpeed(status.uploadSpeedKbps)">
+				<p :title="status.network.uploadSpeedKbps">
 					<span class="item-title">上传速度: </span>
-					{{ formatSpeed(status.uploadSpeedKbps) }}
+					<span>{{ status.network.uploadSpeedKbps }}</span>
 				</p>
-				<p :title="formatSpeed(status.downloadSpeedKbps)">
+				<p :title="status.network.downloadSpeedKbps">
 					<span class="item-title">下载速度: </span>
-					{{ formatSpeed(status.downloadSpeedKbps) }}
+					<span>{{ status.network.downloadSpeedKbps }}</span>
 				</p>
 			</div>
 			<div class="status-card">
 				<div class="title">🖥️ 前台应用状态</div>
-				<p :title="status.appName">
+				<p :title="status.foreground.appName">
 					<span class="item-title">前台包名: </span>
-					{{ status.appName }}
+					<span>{{ status.foreground.appName }}</span>
 				</p>
-				<p :title="status.appTitle">
+				<p :title="status.foreground.appTitle">
 					<span class="item-title">窗口标题: </span>
-					{{ status.appTitle }}
+					<span>{{ status.foreground.appTitle }}</span>
 				</p>
-				<p :title="status.speakerPlaying === 1 ? '否' : status.speakerPlaying === 2 ? '是' : '未知'">
+				<p :title="status.foreground.speakerPlaying[0]">
 					<span class="item-title">扬声器播放: </span>
-					<span :class="{ no: status.speakerPlaying === 1 || -1, yes: status.speakerPlaying === 2 }">
-						{{ status.speakerPlaying === 1 ? "否" : status.speakerPlaying === 2 ? "是" : "未知" }}
-					</span>
+					<span :class="status.foreground.speakerPlaying[1]">{{ status.foreground.speakerPlaying[0] }}</span>
 				</p>
 			</div>
 			<div class="status-card">
 				<p class="title">⚙️ 其他状态</p>
-				<p>
+				<p :title="status.other.screenOn[0]">
 					<span class="item-title">屏幕点亮: </span>
-					<span :class="{ no: status.screenOn === 1, yes: status.screenOn === 2 }">
-						{{ status.screenOn === 1 ? "否" : "是" }}
-					</span>
+					<span :class="status.other.screenOn[1]">{{ status.other.screenOn[0] }}</span>
 				</p>
-				<p>
+				<p :title="status.other.isChargingViaUSB[0]">
 					<span class="item-title">USB充电: </span>
-					<span :class="{ no: status.isChargingViaUSB === 1, yes: status.isChargingViaUSB === 2 }">
-						{{ status.isChargingViaUSB === 1 ? "否" : "是" }}
-					</span>
+					<span :class="status.other.isChargingViaUSB[1]">{{ status.other.isChargingViaUSB[0] }}</span>
 				</p>
-				<p>
+				<p :title="status.other.isChargingViaAC[0]">
 					<span class="item-title">AC充电: </span>
-					<span :class="{ no: status.isChargingViaAC === 1, yes: status.isChargingViaAC === 2 }">
-						{{ status.isChargingViaAC === 1 ? "否" : "是" }}
-					</span>
+					<span :class="status.other.isChargingViaAC[1]">{{ status.other.isChargingViaAC[0] }}</span>
+				</p>
+				<p :title="status.other.isLowPowerMode[0]">
+					<span class="item-title">省电模式: </span>
+					<span :class="status.other.isLowPowerMode[1]">{{ status.other.isLowPowerMode[0] }}</span>
 				</p>
 			</div>
 		</div>
 		<div class="status-card code">
 			<p class="title">🈚 原始响应</p>
-			<pre><code>{{ status }}</code></pre>
+			<pre><code ref="original"></code></pre>
 		</div>
 	</div>
 </template>
