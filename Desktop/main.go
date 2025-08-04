@@ -21,10 +21,8 @@ func main() {
 		Title:             "SlothTracker",
 		Width:             1024,
 		Height:            768,
-		HideWindowOnClose: true,
 		DisableResize:     false,
 		Frameless:         false,
-		StartHidden:       false,
 		Bind: []any{
 			app,
 		},
