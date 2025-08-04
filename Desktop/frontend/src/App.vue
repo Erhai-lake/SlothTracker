@@ -20,17 +20,10 @@ export default {
 		EventBus.off("sidebarOpen", this.sidebarOpen)
 	},
 	created() {
-		this.refresh()
-		if (this.refreshInterval) {
-			setInterval(() => {
-				if (this.refreshInterval === -1) return
-				if (this.refreshInterval > 0) {
-					this.refreshInterval--
-				} else {
-					this.refresh()
-				}
-			}, 1000)
+		if (!window.go) {
+			this.$toast.warning("非客户端环境只有只读功能, 部分功能将无法正常使用")
 		}
+		this.initConfig()
 	},
 	methods: {
 		initConfig() {
@@ -47,11 +40,23 @@ export default {
 				}
 			}
 			this.config = CONFIG
+			this.refresh()
+			if (this.refreshInterval) {
+				setInterval(() => {
+					if (this.refreshInterval === -1) return
+					if (this.refreshInterval > 0) {
+						this.refreshInterval--
+					} else {
+						this.refresh()
+					}
+				}, 1000)
+			}
 		},
 		async refresh() {
-			this.initConfig()
 			this.refreshInterval = Number(this.config.refreshInterval) || -1
-			await window.go.main.App.UpdateStatus(this.config.serverUrl, this.config.deviceId)
+			if (window.go) {
+				window.go.main.App.UpdateStatus(this.config.serverUrl, this.config.deviceId)
+			}
 			EventBus.emit("refresh")
 		},
 		sidebarOpen(open) {

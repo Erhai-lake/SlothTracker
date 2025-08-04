@@ -45,6 +45,10 @@ export default {
 		},
 		// 申请共享
 		async applyForSharing() {
+			if (!window.go) {
+				this.$toast.warning("非客户端环境只有只读功能, 不能申请共享")
+				return
+			}
 			if (!this.deviceId) {
 				this.$toast.error("请输入对方的设备ID")
 				return
@@ -81,6 +85,10 @@ export default {
 		},
 		// 授权/删除
 		async authorization(id, status) {
+			if (!window.go) {
+				this.$toast.warning("非客户端环境只有只读功能, 不能操作共享权限")
+				return
+			}
 			if (status === 3) {
 				try {
 					const RES = await axios.delete(`${this.config.serverUrl}/api/share/delete`, {
@@ -124,7 +132,6 @@ export default {
 					this.$toast.error(RES.data.message)
 					return
 				}
-				console.log(RES.data)
 				this.userApplications = RES.data.applications
 			} catch (error) {
 				console.error(error)
