@@ -19,3 +19,37 @@
 
 * GoLang + Wails
 * Vite + Vue3
+
+## 如何调试
+
+拉取仓库后, 需要先安装依赖.
+
+### 启动后端
+
+```bash
+cd API
+go run main.go
+```
+
+### 启动桌面端
+
+```bash
+cd Desktop
+wails dev
+```
+
+## 如何构建
+
+### 网页端
+
+```bash
+cd Desktop/frontend
+npm run build
+```
+
+### 桌面端
+
+```bash
+cd Desktop
+wails build
+```
