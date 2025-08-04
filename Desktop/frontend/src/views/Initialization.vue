@@ -97,6 +97,10 @@ export default {
 		},
 		// 登录注册
 		async loginRegistration(type) {
+			if (!window.go && type === 2) {
+				this.$toast.warning("非客户端环境只有只读功能, 不能注册账户")
+				return
+			}
 			if (this.loginRegistrationForm.name === "" || this.loginRegistrationForm.password === "") {
 				this.$toast.warning("请填写完整信息")
 				return
@@ -178,10 +182,14 @@ export default {
 				deviceId: this.deviceForm.deviceId
 			}
 			localStorage.setItem("config", JSON.stringify(config))
-			this.complete()
+			await this.complete()
 		},
 		// 注册设备
 		async registrationDevice() {
+			if (!window.go) {
+				this.$toast.warning("非客户端环境只有只读功能, 不能注册设备")
+				return
+			}
 			if (this.deviceForm.name === "" || this.deviceForm.description === "") {
 				this.$toast.warning("请填写完整信息")
 				return
