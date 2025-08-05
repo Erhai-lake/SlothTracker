@@ -1,6 +1,17 @@
 <script>
 import EventBus from "./services/EventBus.js"
 
+// 定义防抖函数
+function debounce(func, delay) {
+	let timer = null
+	return function (...args) {
+		if (timer) clearTimeout(timer)
+		timer = setTimeout(() => {
+			func.apply(this, args)
+		}, delay)
+	}
+}
+
 export default {
 	name: "App",
 	data() {
@@ -16,15 +27,17 @@ export default {
 		EventBus.on("sidebarOpen", this.sidebarOpen)
 		if (!window.go) {
 			this.$toast.warning("非客户端环境无法同步设备状态!")
+			this.refresh()
+		} else {
+			setInterval(() => {
+				if (this.refreshInterval === -1) return
+				if (this.refreshInterval > 0) {
+					this.refreshInterval--
+				} else {
+					this.refresh()
+				}
+			}, 1000)
 		}
-		setInterval(() => {
-			if (this.refreshInterval === -1) return
-			if (this.refreshInterval > 0) {
-				this.refreshInterval--
-			} else {
-				this.refresh()
-			}
-		}, 1000)
 	},
 	beforeUnmount() {
 		EventBus.off("initConfig", this.initConfig)
@@ -46,14 +59,16 @@ export default {
 			}
 			this.config = CONFIG
 		},
-		async refresh() {
+		refresh: debounce(async function() {
 			this.initConfig()
-			this.refreshInterval = Number(this.config.refreshInterval) || -1
 			if (window.go) {
+				this.refreshInterval = Number(this.config.refreshInterval) || -1
 				window.go.main.App.UpdateStatus(this.config.serverUrl, this.config.deviceId)
+			} else {
+				this.refreshInterval = -1
 			}
 			EventBus.emit("refresh")
-		},
+		}, 500),
 		sidebarOpen(open) {
 			this.sidebar = open
 		}
