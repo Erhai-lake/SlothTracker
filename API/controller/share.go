@@ -41,21 +41,21 @@ func ApplyShare(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		// 检查是否已存在授权记录
-		var existingAccess model.DeviceAccess
-		db.Where("device_id = ? AND viewer_id = ?", req.DeviceId, req.ViewerId).First(&existingAccess)
-		if existingAccess.Id != "" {
+		var existingShared model.SharedDevice
+		db.Where("device_id = ? AND viewer_id = ?", req.DeviceId, req.ViewerId).First(&existingShared)
+		if existingShared.Id != "" {
 			c.JSON(http.StatusOK, gin.H{"code": 1, "message": "已存在授权记录"})
 			return
 		}
 		// 创建授权记录
-		access := model.DeviceAccess{
+		shared := model.SharedDevice{
 			Id:            uuid.New().String(),
 			DeviceId:      req.DeviceId,
 			ViewerId:      req.ViewerId,
 			Authorization: 2,
 			CreatedAt:     time.Now(),
 		}
-		db.Create(&access)
+		db.Create(&shared)
 		c.JSON(http.StatusOK, gin.H{"code": 0, "message": "申请分享成功, 等待设备所有者授权"})
 	}
 }
@@ -77,11 +77,11 @@ func GetUserApplications(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		// 查询用户申请的授权
-		var applications []model.DeviceAccess
-		db.Where("viewer_id = ?", userId).Find(&applications)
+		var sharedDevice []model.SharedDevice
+		db.Where("viewer_id = ?", userId).Find(&sharedDevice)
 		// 构建返回结果
 		var result []ApplicationInfo
-		for _, auth := range applications {
+		for _, auth := range sharedDevice {
 			// 获取申请人信息
 			var user model.User
 			db.Where("id = ?", auth.ViewerId).First(&user)
@@ -120,11 +120,11 @@ func GetSharedAuthorizations(db *gorm.DB) gin.HandlerFunc {
 		var deviceIds []string
 		db.Model(&model.Device{}).Where("owner_id = ?", userId).Pluck("id", &deviceIds)
 		// 查询这些设备的共享授权申请
-		var authorizations []model.DeviceAccess
-		db.Where("device_id IN ?", deviceIds).Find(&authorizations)
+		var sharedDevice []model.SharedDevice
+		db.Where("device_id IN ?", deviceIds).Find(&sharedDevice)
 		// 构建返回结果
 		var result []AuthorizationInfo
-		for _, auth := range authorizations {
+		for _, auth := range sharedDevice {
 			// 获取申请人信息
 			var user model.User
 			db.Where("id = ?", auth.ViewerId).First(&user)
@@ -156,9 +156,9 @@ func AuthorizeDevice(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		// 检查授权记录是否存在
-		var access model.DeviceAccess
-		db.Where("id = ?", req.AccessId).First(&access)
-		if access.Id == "" {
+		var shared model.SharedDevice
+		db.Where("id = ?", req.AccessId).First(&shared)
+		if shared.Id == "" {
 			c.JSON(http.StatusOK, gin.H{"code": 1, "message": "授权记录不存在"})
 			return
 		}
@@ -168,8 +168,8 @@ func AuthorizeDevice(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		// 更新授权状态
-		access.Authorization = req.Status
-		db.Save(&access)
+		shared.Authorization = req.Status
+		db.Save(&shared)
 		c.JSON(http.StatusOK, gin.H{"code": 0, "message": "授权操作成功"})
 	}
 }
@@ -186,14 +186,14 @@ func DeleteShare(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		// 检查授权记录是否存在
-		var access model.DeviceAccess
-		db.Where("id = ?", req.AccessId).First(&access)
-		if access.Id == "" {
+		var shared model.SharedDevice
+		db.Where("id = ?", req.AccessId).First(&shared)
+		if shared.Id == "" {
 			c.JSON(http.StatusOK, gin.H{"code": 1, "message": "授权记录不存在"})
 			return
 		}
 		// 删除共享申请
-		db.Delete(&access)
+		db.Delete(&shared)
 		c.JSON(http.StatusOK, gin.H{"code": 0, "message": "删除共享申请成功"})
 	}
 }

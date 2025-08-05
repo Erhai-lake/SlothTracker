@@ -88,11 +88,11 @@ func GetSharedDeviceList(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		// 获取共享给用户的设备(以授权的设备)
-		var deviceAccesses []model.DeviceAccess
-		db.Where("viewer_id = ? AND Authorization = ?", userId, 1).Find(&deviceAccesses)
+		var sharedDevice []model.SharedDevice
+		db.Where("viewer_id = ? AND Authorization = ?", userId, 1).Find(&sharedDevice)
 		// 提取设备ID
 		var deviceIds []string
-		for _, access := range deviceAccesses {
+		for _, access := range sharedDevice {
 			deviceIds = append(deviceIds, access.DeviceId)
 		}
 		// 查询设备信息

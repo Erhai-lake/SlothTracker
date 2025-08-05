@@ -55,18 +55,18 @@ export default {
 		async getStatus() {
 			const CONFIG = JSON.parse(localStorage.getItem("config"))
 			try {
-				const RES = await axios.get(`${CONFIG.serverUrl}/api/status/${this.route.params.id}`, {
+				const ORIGINAL = this.$refs.original
+				const RES = await axios.get(`${CONFIG.serverUrl}/api/status/${CONFIG.userId}/${this.route.params.id}`, {
 					validateStatus: () => {
 						return true
 					}
 				})
+				// 原始数据
+				ORIGINAL.innerHTML = JSON.stringify(RES.data, null, 2)
 				if (RES.data.code !== 0) {
 					this.$toast.error(RES.data.message)
 					return
 				}
-				// 原始数据
-				const ORIGINAL = this.$refs.original
-				ORIGINAL.innerHTML = JSON.stringify(RES.data, null, 2)
 				this.status = {
 					id: RES.data.status.id,
 					device_id: RES.data.status.device_id,

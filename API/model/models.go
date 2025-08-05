@@ -11,7 +11,7 @@ type User struct {
 	RegisteredAt time.Time `json:"registered_at"`                  // 注册时间
 }
 
-type DeviceAccess struct {
+type SharedDevice struct {
 	Id            string    `gorm:"primaryKey;column:id" json:"id"` // 唯一标识
 	DeviceId      string    `json:"device_id"`                      // 被访问的设备
 	ViewerId      string    `json:"viewer_id"`                      // 被授权的用户ID

@@ -103,7 +103,7 @@ export default {
 			<tabs-tab name="current">
 				<template #label>当前</template>
 				<div class="item">
-					<router-link :to="'/' + this.config.deviceId" class="container">
+					<router-link :to="'/device/' + this.config.deviceId" class="container">
 						<p :title="device.name">{{ device.name }}</p>
 						<p :title="device.platform">{{ device.platform }}</p>
 						<p :title="device.description">{{ device.description }}</p>
@@ -116,7 +116,7 @@ export default {
 				<div class="item" v-else>
 					<router-link
 						class="container"
-						:to="'/' + item.id"
+						:to="'/device/' + item.id"
 						v-for="item in accountDevices"
 						:key="item.ID">
 						<p :title="item.name">{{ item.name }}</p>
@@ -131,7 +131,7 @@ export default {
 				<div class="item" v-else>
 					<router-link
 						class="container"
-						:to="'/' + item.id"
+						:to="'/device/' + item.id"
 						v-for="item in shareDevices"
 						:key="item.ID">
 						<p :title="item.name">{{ item.name }}</p>
