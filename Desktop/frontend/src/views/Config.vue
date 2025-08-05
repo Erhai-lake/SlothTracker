@@ -101,10 +101,6 @@ export default {
 		},
 		// 保存设备信息
 		async saveDevice() {
-			if (!window.go) {
-				this.$toast.warning("非客户端环境只有只读功能, 不能更新设备信息")
-				return
-			}
 			if (this.deviceForm.name === "" || this.deviceForm.description === "") {
 				this.$toast.warning("请填写完整信息")
 				return
@@ -128,10 +124,6 @@ export default {
 		},
 		// 注销设备
 		async writeOffDevice() {
-			if (!window.go) {
-				this.$toast.warning("非客户端环境只有只读功能, 不能注销设备")
-				return
-			}
 			if (this.writeOffDeviceConfirm === 1) {
 				this.writeOffDeviceConfirm = 2
 				this.$toast.warning("请再次点击确认是否继续注销, 3秒后重置注销状态")
@@ -184,10 +176,6 @@ export default {
 		},
 		// 保存账户信息
 		saveAccount() {
-			if (!window.go) {
-				this.$toast.warning("非客户端环境只有只读功能, 不能更新账户信息")
-				return
-			}
 			if (this.accountForm.name !== "" && this.accountForm.oldName !== this.accountForm.newName) {
 				this.resetAccountName()
 			}
@@ -233,10 +221,6 @@ export default {
 		},
 		// 注销账户
 		async writeOffAccount() {
-			if (!window.go) {
-				this.$toast.warning("非客户端环境只有只读功能, 不能注销账户")
-				return
-			}
 			if (this.writeOffAccountConfirm === 1) {
 				this.writeOffAccountConfirm = 2
 				this.$toast.warning("请再次点击确认是否继续注销, 3秒后重置注销状态")

@@ -21,7 +21,7 @@ export default {
 	},
 	created() {
 		if (!window.go) {
-			this.$toast.warning("非客户端环境只有只读功能, 部分功能将无法正常使用")
+			this.$toast.warning("非客户端环境无法同步设备状态!")
 		}
 		this.initConfig()
 	},
