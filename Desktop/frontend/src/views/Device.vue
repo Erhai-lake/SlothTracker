@@ -44,12 +44,10 @@ export default {
 	},
 	mounted() {
 		EventBus.on("refresh", this.getStatus)
+		this.getStatus()
 	},
 	beforeUnmount() {
 		EventBus.off("refresh", this.getStatus)
-	},
-	created() {
-		this.getStatus()
 	},
 	methods: {
 		async getStatus() {

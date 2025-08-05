@@ -14,12 +14,6 @@ export default {
 		document.addEventListener("contextmenu", event => event.preventDefault())
 		EventBus.on("initConfig", this.initConfig)
 		EventBus.on("sidebarOpen", this.sidebarOpen)
-	},
-	beforeUnmount() {
-		EventBus.off("initConfig", this.initConfig)
-		EventBus.off("sidebarOpen", this.sidebarOpen)
-	},
-	created() {
 		if (!window.go) {
 			this.$toast.warning("非客户端环境无法同步设备状态!")
 		}
@@ -31,6 +25,10 @@ export default {
 				this.refresh()
 			}
 		}, 1000)
+	},
+	beforeUnmount() {
+		EventBus.off("initConfig", this.initConfig)
+		EventBus.off("sidebarOpen", this.sidebarOpen)
 	},
 	methods: {
 		initConfig() {

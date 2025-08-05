@@ -27,7 +27,7 @@ export default {
 			devices: []
 		}
 	},
-	created() {
+	mounted() {
 		this.init()
 	},
 	methods: {

@@ -1,13 +1,16 @@
 package status
 
 import (
+	"encoding/hex"
 	"errors"
-	psnet "github.com/shirou/gopsutil/v3/net"
 	"net"
 	"os/exec"
 	"runtime"
 	"strings"
 	"time"
+	"unicode/utf8"
+
+	psnet "github.com/shirou/gopsutil/v3/net"
 )
 
 type NetworkStatus struct {
@@ -121,6 +124,22 @@ func isEthernetInterface(name string) bool {
 	return false
 }
 
+// 尝试将十六进制字符串转为UTF-8字符串, 如果失败就返回原始字符串
+func tryDecodeSSIDHex(s string) string {
+	// 长度必须是偶数, 且必须是合法十六进制字符
+	if len(s)%2 != 0 {
+		return s
+	}
+	data, err := hex.DecodeString(s)
+	if err != nil {
+		return s
+	}
+	if !utf8.Valid(data) {
+		return s
+	}
+	return string(data)
+}
+
 func getWindowsWifiInfo() (*NetworkStatus, error) {
 	// 获取当前连接的SSID
 	cmd := exec.Command("netsh", "wlan", "show", "interfaces")
@@ -134,7 +153,8 @@ func getWindowsWifiInfo() (*NetworkStatus, error) {
 		if strings.Contains(line, "SSID") && !strings.Contains(line, "BSSID") {
 			parts := strings.SplitN(line, ":", 2)
 			if len(parts) == 2 {
-				ssid := strings.TrimSpace(parts[1])
+				rawSSID := strings.TrimSpace(parts[1])
+				ssid := tryDecodeSSIDHex(rawSSID)
 				if ssid != "" {
 					info.WifiConnected = 1
 					info.WifiSSId = ssid

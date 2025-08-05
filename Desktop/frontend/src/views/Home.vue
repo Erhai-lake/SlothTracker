@@ -22,12 +22,10 @@ export default {
 	},
 	mounted() {
 		EventBus.on("refresh", this.refresh)
+		this.refresh()
 	},
 	beforeUnmount() {
 		EventBus.off("refresh", this.refresh)
-	},
-	created() {
-		this.refresh()
 	},
 	methods: {
 		// 刷新

@@ -30,7 +30,7 @@ export default {
 			writeOffAccountConfirm: 1
 		}
 	},
-	created() {
+	mounted() {
 		this.config = JSON.parse(localStorage.getItem("config"))
 		this.getRegularInfo()
 		this.getDeviceInfo()
