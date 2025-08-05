@@ -132,7 +132,7 @@ export default {
 		// 获取用户申请的授权列表
 		async getUserApplicationsList() {
 			try {
-				const RES = await axios.get(`${this.config.serverUrl}/api/share/${this.config.userId}`,{
+				const RES = await axios.get(`${this.config.serverUrl}/api/share/${this.config.userId}`, {
 					validateStatus: () => {
 						return true
 					}
@@ -174,11 +174,11 @@ export default {
 					</div>
 				</div>
 				<div class="container">
-					<div class="default" v-if="(shareAuthorizations || []).length === 0">没有设备</div>
+					<div class="default" v-if="(userApplications || []).length === 0">没有设备</div>
 					<table v-else>
 						<thead>
 						<tr>
-							<th>申请人的用户名</th>
+							<th>申请的用户名</th>
 							<th>申请的设备名称</th>
 							<th>申请时间</th>
 							<th>操作</th>
@@ -186,15 +186,17 @@ export default {
 						</thead>
 						<tbody>
 						<tr
-							v-for="item in shareAuthorizations"
+							v-for="item in userApplications"
 							:key="item.id"
 							:class="{'status-yes': item.status === 1, 'status-no': item.status === 2}">
 							<td>{{ item.user_name }}</td>
 							<td>{{ item.device_name }}</td>
 							<td>{{ formatTime(item.created_at) }}</td>
 							<td>
-								<button @click="authorization(item.id, 1)">同意</button>
-								<button @click="authorization(item.id, 2)">拒绝</button>
+								<i></i>
+								<router-link :to="'/device/' + item.device_id">
+									<button>查看</button>
+								</router-link>
 								<button @click="authorization(item.id, 3)">删除</button>
 							</td>
 						</tr>
@@ -204,11 +206,11 @@ export default {
 			</tabs-tab>
 			<tabs-tab name="sharedManagement">
 				<template #label>共享管理</template>
-				<div class="default" v-if="(userApplications || []).length === 0">没有设备</div>
+				<div class="default" v-if="(shareAuthorizations || []).length === 0">没有设备</div>
 				<table v-else>
 					<thead>
 					<tr>
-						<th>申请的用户名</th>
+						<th>申请人的用户名</th>
 						<th>申请的设备名称</th>
 						<th>申请时间</th>
 						<th>操作</th>
@@ -216,15 +218,15 @@ export default {
 					</thead>
 					<tbody>
 					<tr
-						v-for="item in userApplications"
+						v-for="item in shareAuthorizations"
 						:key="item.id"
 						:class="{'status-yes': item.status === 1, 'status-no': item.status === 2}">
 						<td>{{ item.user_name }}</td>
 						<td>{{ item.device_name }}</td>
 						<td>{{ formatTime(item.created_at) }}</td>
 						<td>
-							<i></i>
-							<i></i>
+							<button @click="authorization(item.id, 1)">同意</button>
+							<button @click="authorization(item.id, 2)">拒绝</button>
 							<button @click="authorization(item.id, 3)">删除</button>
 						</td>
 					</tr>

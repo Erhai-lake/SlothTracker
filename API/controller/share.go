@@ -64,6 +64,7 @@ func ApplyShare(db *gorm.DB) gin.HandlerFunc {
 func GetUserApplications(db *gorm.DB) gin.HandlerFunc {
 	type ApplicationInfo struct {
 		Id         string    `json:"id"`
+		DeviceId   string    `json:"device_id"`
 		Status     int       `json:"status"`
 		UserName   string    `json:"user_name"`
 		DeviceName string    `json:"device_name"`
@@ -90,6 +91,7 @@ func GetUserApplications(db *gorm.DB) gin.HandlerFunc {
 			db.Where("id = ?", auth.DeviceId).First(&device)
 			result = append(result, ApplicationInfo{
 				Id:         auth.Id,
+				DeviceId:   auth.DeviceId,
 				Status:     auth.Authorization,
 				UserName:   user.Name,
 				DeviceName: device.Name,

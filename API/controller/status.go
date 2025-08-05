@@ -9,13 +9,12 @@ import (
 	"time"
 )
 
-type DeviceStatusWithSource struct {
-	Source string `json:"source"`
-	model.DeviceStatus
-}
-
 // 获取设备状态
 func GetStatus(db *gorm.DB) gin.HandlerFunc {
+	type DeviceStatusWithSource struct {
+		Source string `json:"source"`
+		model.DeviceStatus
+	}
 	return func(c *gin.Context) {
 		deviceID := c.Param("device_id")
 		userID := c.Param("user_id")
@@ -28,7 +27,7 @@ func GetStatus(db *gorm.DB) gin.HandlerFunc {
 		// 检查设备是否归属用户
 		var device model.Device
 		result := db.Where("id = ? AND owner_id = ?", deviceID, userID).First(&device)
-		if (result.Error != nil) {
+		if result.Error != nil {
 			if result.Error == gorm.ErrRecordNotFound {
 				// 不是所有者, 检查是否为已授权的共享设备
 				var sharedDevice model.SharedDevice
