@@ -20,6 +20,10 @@
 * GoLang + Wails
 * Vite + Vue3
 
+## Web
+
+采用Desktop的前端代码, 使用Vite + Vue3构建.
+
 ## 如何调试
 
 拉取仓库后, 需要先安装依赖.

@@ -79,12 +79,12 @@ export default {
 <template>
 	<div class="app">
 		<div class="sidebar-container" v-if="sidebar">
-			<router-link to="/">首页</router-link>
-			<router-link to="/share">共享</router-link>
-			<router-link to="/config">设置</router-link>
-			<div></div>
-			<div @click="refresh">刷新</div>
-			<div>{{ refreshInterval === -1 ? "禁用" : refreshInterval }}</div>
+			<router-link to="/" class="nav-item">首页</router-link>
+			<router-link to="/share" class="nav-item">共享</router-link>
+			<router-link to="/config" class="nav-item">设置</router-link>
+			<div class="spacer"></div>
+			<div class="nav-item clickable" @click="refresh">刷新</div>
+			<div class="nav-item status">{{ refreshInterval === -1 ? "禁用" : refreshInterval }}</div>
 		</div>
 		<div class="view">
 			<router-view/>
@@ -105,6 +105,7 @@ export default {
 	padding: 16px 0;
 	width: 64px;
 	height: 100%;
+	border-radius: 0 10px 10px 0;
 	background-color: rgba(0, 0, 0, 0.4);
 	backdrop-filter: blur(5px);
 	border-right: 1px solid var(--border-color);
@@ -117,6 +118,42 @@ export default {
 	overflow: hidden;
 	user-select: none;
 	z-index: 2;
+
+	.nav-item {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 40px;
+		font-size: 14px;
+		color: #ddd;
+		border-radius: 6px;
+		margin: 0 8px;
+		cursor: pointer;
+		transition: all 0.2s ease-in-out;
+
+		&:hover {
+			background-color: rgba(255, 255, 255, 0.1);
+			color: #fff;
+		}
+
+		&.router-link-exact-active {
+			background-color: #80ceff;
+			color: #fff;
+			font-weight: bold;
+		}
+	}
+
+	.clickable {
+		&:active {
+			transform: scale(0.96);
+		}
+	}
+
+	.status {
+		font-size: 12px;
+		color: #aaa;
+		pointer-events: none;
+	}
 }
 
 .view {
