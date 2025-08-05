@@ -61,7 +61,11 @@ export default {
 				return
 			}
 			try {
-				const RES = await axios.get(`${this.serverUrl}/api/ping`)
+				const RES = await axios.get(`${this.serverUrl}/api/ping`, {
+					validateStatus: () => {
+						return true
+					}
+				})
 				if (RES.data.code !== 0) {
 					this.$toast.error("服务器地址错误")
 					return
@@ -113,6 +117,10 @@ export default {
 					{
 						name: this.loginRegistrationForm.name,
 						password: this.loginRegistrationForm.password
+					}, {
+						validateStatus: () => {
+							return true
+						}
 					})
 				if (RES.data.code !== 0) {
 					this.$toast.error(RES.data.message)
@@ -137,7 +145,11 @@ export default {
 		// 获取设备列表
 		async getDevices() {
 			try {
-				const RES = await axios.get(`${this.serverUrl}/api/devices/${JSON.parse(localStorage.getItem("config")).userId}`)
+				const RES = await axios.get(`${this.serverUrl}/api/devices/${JSON.parse(localStorage.getItem("config")).userId}`, {
+					validateStatus: () => {
+						return true
+					}
+				})
 				if (RES.data.code !== 0) {
 					this.$toast.error(RES.data.message)
 					return
@@ -161,6 +173,10 @@ export default {
 						name: this.deviceForm.name,
 						platform: this.deviceForm.platform,
 						description: this.deviceForm.description
+					}, {
+						validateStatus: () => {
+							return true
+						}
 					})
 					if (RES.data.code !== 0) {
 						this.$toast.error(RES.data.message)
@@ -193,6 +209,10 @@ export default {
 						deviceName: this.deviceForm.name,
 						platform: this.deviceForm.platform,
 						description: this.deviceForm.description
+					}, {
+						validateStatus: () => {
+							return true
+						}
 					})
 				if (RES.data.code !== 0) {
 					this.$toast.error(RES.data.message)

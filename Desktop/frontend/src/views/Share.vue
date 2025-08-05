@@ -53,6 +53,10 @@ export default {
 				const RES = await axios.post(`${this.config.serverUrl}/api/share/apply`, {
 					deviceId: this.deviceId,
 					viewerId: this.config.userId
+				}, {
+					validateStatus: () => {
+						return true
+					}
 				})
 				if (RES.data.code !== 0) {
 					this.$toast.error(RES.data.message)
@@ -68,7 +72,11 @@ export default {
 		// 获取共享授权列表
 		async getShareAuthorizationList() {
 			try {
-				const RES = await axios.get(`${this.config.serverUrl}/api/share/authorizations/${this.config.userId}`)
+				const RES = await axios.get(`${this.config.serverUrl}/api/share/authorizations/${this.config.userId}`, {
+					validateStatus: () => {
+						return true
+					}
+				})
 				if (RES.data.code !== 0) {
 					this.$toast.error(RES.data.message)
 					return
@@ -86,6 +94,9 @@ export default {
 					const RES = await axios.delete(`${this.config.serverUrl}/api/share/delete`, {
 						data: {
 							id: id
+						},
+						validateStatus: () => {
+							return true
 						}
 					})
 					if (RES.data.code !== 0) {
@@ -103,6 +114,10 @@ export default {
 					const RES = await axios.put(`${this.config.serverUrl}/api/share/authorize`, {
 						id: id,
 						status: status
+					}, {
+						validateStatus: () => {
+							return true
+						}
 					})
 					if (RES.data.code !== 0) {
 						this.$toast.error(RES.data.message)
@@ -119,7 +134,11 @@ export default {
 		// 获取用户申请的授权列表
 		async getUserApplicationsList() {
 			try {
-				const RES = await axios.get(`${this.config.serverUrl}/api/share/${this.config.userId}`)
+				const RES = await axios.get(`${this.config.serverUrl}/api/share/${this.config.userId}`,{
+					validateStatus: () => {
+						return true
+					}
+				})
 				if (RES.data.code !== 0) {
 					this.$toast.error(RES.data.message)
 					return

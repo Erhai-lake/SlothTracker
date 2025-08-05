@@ -50,7 +50,11 @@ export default {
 				return
 			}
 			try {
-				const RES = await axios.get(`${this.regularForm.serverUrl}/api/ping`)
+				const RES = await axios.get(`${this.regularForm.serverUrl}/api/ping`, {
+					validateStatus: () => {
+						return true
+					}
+				})
 				if (RES.data.code !== 0) {
 					this.$toast.error("服务器地址错误")
 					return
@@ -87,7 +91,11 @@ export default {
 		// 获取设备信息
 		async getDeviceInfo() {
 			try {
-				const RES = await axios.get(`${this.config.serverUrl}/api/device/${this.config.deviceId}`)
+				const RES = await axios.get(`${this.config.serverUrl}/api/device/${this.config.deviceId}`, {
+					validateStatus: () => {
+						return true
+					}
+				})
 				if (RES.data.code !== 0) {
 					this.$toast.error(RES.data.message)
 					return
@@ -111,6 +119,10 @@ export default {
 					name: this.deviceForm.name,
 					platform: "windows",
 					description: this.deviceForm.description
+				}, {
+					validateStatus: () => {
+						return true
+					}
 				})
 				if (RES.data.code !== 0) {
 					this.$toast.error(RES.data.message)
@@ -137,6 +149,9 @@ export default {
 					const RES = await axios.delete(`${this.config.serverUrl}/api/device/delete`, {
 						data: {
 							id: this.config.deviceId,
+						},
+						validateStatus: () => {
+							return true
 						}
 					})
 					if (RES.data.code !== 0) {
@@ -162,7 +177,11 @@ export default {
 		// 获取账户信息
 		async getAccountInfo() {
 			try {
-				const RES = await axios.get(`${this.config.serverUrl}/api/user/${this.config.userId}`)
+				const RES = await axios.get(`${this.config.serverUrl}/api/user/${this.config.userId}`, {
+					validateStatus: () => {
+						return true
+					}
+				})
 				if (RES.data.code !== 0) {
 					this.$toast.error(RES.data.message)
 					return
@@ -189,6 +208,10 @@ export default {
 				const RES = await axios.put(`${this.config.serverUrl}/api/user/reset_name`, {
 					id: this.config.userId,
 					name: this.accountForm.newName
+				}, {
+					validateStatus: () => {
+						return true
+					}
 				})
 				if (RES.data.code !== 0) {
 					this.$toast.error(RES.data.message)
@@ -208,6 +231,10 @@ export default {
 					id: this.config.userId,
 					old_password: this.accountForm.oldPassword,
 					new_password: this.accountForm.newPassword
+				}, {
+					validateStatus: () => {
+						return true
+					}
 				})
 				if (RES.data.code !== 0) {
 					this.$toast.error(RES.data.message)
@@ -243,6 +270,9 @@ export default {
 						data: {
 							id: this.config.userId,
 							password: this.accountForm.oldPassword
+						},
+						validateStatus: () => {
+							return true
 						}
 					})
 					if (RES.data.code !== 0) {

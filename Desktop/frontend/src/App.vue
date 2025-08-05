@@ -23,7 +23,14 @@ export default {
 		if (!window.go) {
 			this.$toast.warning("非客户端环境无法同步设备状态!")
 		}
-		this.initConfig()
+		setInterval(() => {
+			if (this.refreshInterval === -1) return
+			if (this.refreshInterval > 0) {
+				this.refreshInterval--
+			} else {
+				this.refresh()
+			}
+		}, 1000)
 	},
 	methods: {
 		initConfig() {
@@ -40,19 +47,9 @@ export default {
 				}
 			}
 			this.config = CONFIG
-			this.refresh()
-			if (this.refreshInterval) {
-				setInterval(() => {
-					if (this.refreshInterval === -1) return
-					if (this.refreshInterval > 0) {
-						this.refreshInterval--
-					} else {
-						this.refresh()
-					}
-				}, 1000)
-			}
 		},
 		async refresh() {
+			this.initConfig()
 			this.refreshInterval = Number(this.config.refreshInterval) || -1
 			if (window.go) {
 				window.go.main.App.UpdateStatus(this.config.serverUrl, this.config.deviceId)

@@ -40,7 +40,11 @@ export default {
 		// 获取设备信息
 		async getDevice() {
 			try {
-				const RES = await axios.get(`${this.config.serverUrl}/api/device/${this.config.deviceId}`)
+				const RES = await axios.get(`${this.config.serverUrl}/api/device/${this.config.deviceId}`, {
+					validateStatus: () => {
+						return true
+					}
+				})
 				if (RES.data.code !== 0) {
 					this.$toast.error(RES.data.message)
 					return
@@ -56,7 +60,11 @@ export default {
 		// 获取账户设备
 		async getAccountDevices() {
 			try {
-				const RES = await axios.get(`${this.config.serverUrl}/api/devices/${this.config.userId}`)
+				const RES = await axios.get(`${this.config.serverUrl}/api/devices/${this.config.userId}`, {
+					validateStatus: () => {
+						return true
+					}
+				})
 				if (RES.data.code !== 0) {
 					this.$toast.error(RES.data.message)
 					return
@@ -70,7 +78,11 @@ export default {
 		// 获取共享设备
 		async getShareDevices() {
 			try {
-				const RES = await axios.get(`${this.config.serverUrl}/api/devices/shared/${this.config.userId}`)
+				const RES = await axios.get(`${this.config.serverUrl}/api/devices/shared/${this.config.userId}`, {
+					validateStatus: () => {
+						return true
+					}
+				})
 				if (RES.data.code !== 0) {
 					this.$toast.error(RES.data.message)
 					return
