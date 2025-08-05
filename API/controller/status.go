@@ -1,14 +1,18 @@
 package controller
 
 import (
-	"net/http"
-	"sloth-tracker/api/model"
-	"time"
-
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"net/http"
+	"sloth-tracker/api/model"
+	"time"
 )
+
+type DeviceStatusWithSource struct {
+	Source string `json:"source"`
+	model.DeviceStatus
+}
 
 // 获取设备状态
 func GetStatus(db *gorm.DB) gin.HandlerFunc {
@@ -20,17 +24,18 @@ func GetStatus(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusOK, gin.H{"code": 1, "message": "参数错误"})
 			return
 		}
+		source := "账户"
 		// 检查设备是否归属用户
 		var device model.Device
-		err := db.Where("id = ? AND owner_id = ?", deviceID, userID).First(&device).Error
-		if err != nil {
-			if err == gorm.ErrRecordNotFound {
+		result := db.Where("id = ? AND owner_id = ?", deviceID, userID).First(&device)
+		if (result.Error != nil) {
+			if result.Error == gorm.ErrRecordNotFound {
 				// 不是所有者, 检查是否为已授权的共享设备
 				var sharedDevice model.SharedDevice
-				err = db.Where("device_id = ? AND viewer_id = ? AND authorization = 1", deviceID, userID).
-					First(&sharedDevice).Error
-				if err != nil {
-					if err == gorm.ErrRecordNotFound {
+				result = db.Where("device_id = ? AND viewer_id = ? AND authorization = 1", deviceID, userID).First(&sharedDevice)
+				source = "共享"
+				if result.Error != nil {
+					if result.Error == gorm.ErrRecordNotFound {
 						// 既不是设备所有者, 也不是授权用户, 权限不足
 						c.JSON(http.StatusForbidden, gin.H{"code": 4, "message": "无权获取该设备状态"})
 					} else {
@@ -44,8 +49,9 @@ func GetStatus(db *gorm.DB) gin.HandlerFunc {
 			}
 		}
 		// 查询设备状态
-		var status model.DeviceStatus
-		result := db.Where("device_id = ?", deviceID).First(&status)
+		var status DeviceStatusWithSource
+		status.DeviceStatus = model.DeviceStatus{}
+		result = db.Where("device_id = ?", deviceID).First(&status.DeviceStatus)
 		if result.Error != nil {
 			if result.Error == gorm.ErrRecordNotFound {
 				c.JSON(http.StatusNotFound, gin.H{"code": 2, "message": "设备状态未找到"})
@@ -54,6 +60,7 @@ func GetStatus(db *gorm.DB) gin.HandlerFunc {
 			}
 			return
 		}
+		status.Source = source
 		c.JSON(http.StatusOK, gin.H{"code": 0, "message": "查询成功", "status": status})
 	}
 }

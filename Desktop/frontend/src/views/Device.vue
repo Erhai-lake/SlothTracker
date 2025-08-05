@@ -11,6 +11,7 @@ export default {
 			status: {
 				id: null,
 				device_id: null,
+				source: null,
 				timestamp: [],
 				battery: {
 					charging: [],
@@ -68,6 +69,7 @@ export default {
 				this.status = {
 					id: RES.data.status.id,
 					device_id: RES.data.status.device_id,
+					source: RES.data.status.source,
 					timestamp: [
 						this.formatTimestamp(RES.data.status.timestamp),
 						RES.data.status.timestamp + 5 * 60 * 1000 < Date.now() ? "no" : "yes",
@@ -222,6 +224,10 @@ export default {
 					<span class="item-title">设备ID: </span>
 					<span>{{ status.device_id }}</span>
 				</p>
+				<p :title="status.source">
+					<span class="item-title">来源: </span>
+					<span>{{ status.source }}</span>
+				</p>
 				<p :title="status.timestamp[2]">
 					<span class="item-title">时效性: </span>
 					<span :class="status.timestamp[1]">{{ status.timestamp[2] }}</span>
@@ -351,8 +357,8 @@ h1 {
 .status-grid {
 	padding: 16px;
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-	gap: 16px;
+	grid-template-columns: repeat(auto-fit, minmax(410px, 1fr));
+	gap: 15px;
 }
 
 .status-card {
