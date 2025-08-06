@@ -17,8 +17,10 @@ export default {
 	data() {
 		return {
 			sidebar: true,
+			interval: null,
 			config: {},
-			refreshInterval: 0
+			refreshInterval: 0,
+			backgroundUrl: "https://www.loliapi.com/acg"
 		}
 	},
 	mounted() {
@@ -29,7 +31,7 @@ export default {
 			this.$toast.warning("非客户端环境无法同步设备状态!")
 			this.refresh()
 		} else {
-			setInterval(() => {
+			this.interval = setInterval(() => {
 				if (this.refreshInterval === -1) return
 				if (this.refreshInterval > 0) {
 					this.refreshInterval--
@@ -42,6 +44,9 @@ export default {
 	beforeUnmount() {
 		EventBus.off("initConfig", this.initConfig)
 		EventBus.off("sidebarOpen", this.sidebarOpen)
+		if (this.interval) {
+			clearInterval(this.interval)
+		}
 	},
 	methods: {
 		initConfig() {
@@ -59,15 +64,23 @@ export default {
 			}
 			this.config = CONFIG
 		},
-		refresh: debounce(async function() {
+		refreshBackground: debounce(function () {
+			this.backgroundUrl = `https://www.loliapi.com/acg?${Date.now()}`
+		}, 1000),
+		refresh: debounce(async function () {
 			this.initConfig()
 			if (window.go) {
 				this.refreshInterval = Number(this.config.refreshInterval) || -1
-				window.go.main.App.UpdateStatus(this.config.serverUrl, this.config.deviceId)
+				const RES = await window.go.main.App.UpdateStatus(this.config.serverUrl, this.config.userId, this.config.deviceId)
+				if (RES.code !== 0) {
+					this.$toast.error(RES.message)
+					return
+				}
+				EventBus.emit("refresh")
 			} else {
+				EventBus.emit("refresh")
 				this.refreshInterval = -1
 			}
-			EventBus.emit("refresh")
 		}, 500),
 		sidebarOpen(open) {
 			this.sidebar = open
@@ -83,13 +96,18 @@ export default {
 			<router-link to="/share" class="nav-item">共享</router-link>
 			<router-link to="/config" class="nav-item">设置</router-link>
 			<div class="spacer"></div>
+			<div class="nav-item clickable" @click="refreshBackground">背景</div>
 			<div class="nav-item clickable" @click="refresh">刷新</div>
 			<div class="nav-item status">{{ refreshInterval === -1 ? "禁用" : refreshInterval }}</div>
 		</div>
 		<div class="view">
 			<router-view/>
 		</div>
-		<div class="images" v-if="config.background"></div>
+		<div
+			class="images images1" v-if="config.background"
+			:style="{ backgroundImage: `url(${backgroundUrl})` }">
+		</div>
+		<div class="images images2" v-if="config.background"></div>
 	</div>
 </template>
 
@@ -112,12 +130,12 @@ export default {
 	box-shadow: rgba(142, 142, 142, 0.2) 0 6px 15px 0;
 	display: grid;
 	grid-template-columns: 1fr;
-	grid-template-rows: auto auto 1fr auto auto;
+	grid-template-rows: auto auto 1fr auto auto auto;
 	gap: 16px;
 	text-align: center;
 	overflow: hidden;
 	user-select: none;
-	z-index: 2;
+	z-index: 3;
 
 	.nav-item {
 		display: flex;
@@ -160,9 +178,8 @@ export default {
 	width: 100%;
 	height: 100%;
 	overflow: auto;
-	z-index: 2;
+	z-index: 3;
 }
-
 
 .images {
 	position: absolute;
@@ -171,11 +188,18 @@ export default {
 	width: 100%;
 	height: 100vh;
 	overflow: hidden;
-	background-image: url("https://www.loliapi.com/acg");
 	background-size: cover;
 	background-position: center;
 	background-repeat: no-repeat;
-	filter: opacity(0.8);
+}
+
+.images1 {
+	background-image: url("assets/images/background.png");
+	z-index: 2;
+}
+
+.images2 {
+	background-image: url("assets/images/background.png");
 	z-index: 1;
 }
 </style>

@@ -60,7 +60,7 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	r.DELETE("/api/device/delete", controller.DeleteDevice(db))
 
 	// 状态更新
-	r.PUT("/api/status/update/:device_id", controller.UpdateStatus(db))
+	r.PUT("/api/status/update/:user_id/:device_id", controller.UpdateStatus(db))
 	// 获取设备状态
 	r.GET("/api/status/:user_id/:device_id", controller.GetStatus(db))
 

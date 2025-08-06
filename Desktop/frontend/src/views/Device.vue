@@ -40,12 +40,16 @@ export default {
 					isChargingViaAC: [],
 					isLowPowerMode: []
 				}
-			}
+			},
+			interval: null
 		}
 	},
 	mounted() {
 		EventBus.on("refresh", this.getStatus)
 		this.getStatus()
+		this.interval = setInterval(() => {
+			this.status.timestamp[2] = this.formatTime(this.status.timestamp[3])
+		}, 1000)
 	},
 	beforeUnmount() {
 		EventBus.off("refresh", this.getStatus)
@@ -72,8 +76,9 @@ export default {
 					source: RES.data.status.source,
 					timestamp: [
 						this.formatTimestamp(RES.data.status.timestamp),
-						RES.data.status.timestamp + 5 * 60 * 1000 < Date.now() ? "no" : "yes",
-						this.formatTime(RES.data.status.timestamp)
+						RES.data.status.timestamp + 60 * 1000 < Date.now() ? "no" : "yes",
+						this.formatTime(RES.data.status.timestamp),
+						RES.data.status.timestamp
 					],
 					battery: {
 						charging: [

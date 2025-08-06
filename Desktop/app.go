@@ -16,8 +16,8 @@ func NewApp() *App {
 	return &App{}
 }
 
-func (a *App) UpdateStatus(serverUrl string, deviceId string) string {
-	url := fmt.Sprintf("%s/api/status/update/%s", serverUrl, deviceId)
+func (a *App) UpdateStatus(serverUrl string, userId string, deviceId string) any {
+	url := fmt.Sprintf("%s/api/status/update/%s/%s", serverUrl, userId, deviceId)
 	// 获取电池信息
 	batteryInfo, err := status.GetBatteryInfo()
 	if err != nil {
@@ -105,6 +105,5 @@ func (a *App) UpdateStatus(serverUrl string, deviceId string) string {
 		log.Printf("JSON 解码失败: %v", err)
 		return "JSON 解码失败"
 	}
-	message := respData["message"].(string)
-	return message
+	return respData
 }

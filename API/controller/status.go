@@ -68,8 +68,10 @@ func GetStatus(db *gorm.DB) gin.HandlerFunc {
 func UpdateStatus(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deviceID := c.Param("device_id")
-		if deviceID == "" {
-			c.JSON(http.StatusOK, gin.H{"code": 1, "message": "device_id 参数不能为空"})
+		userID := c.Param("user_id")
+		// 校验参数
+		if deviceID == "" || userID == "" {
+			c.JSON(http.StatusOK, gin.H{"code": 1, "message": "参数错误"})
 			return
 		}
 		var req model.DeviceStatus
@@ -77,7 +79,18 @@ func UpdateStatus(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusOK, gin.H{"code": 1, "message": "参数错误"})
 			return
 		}
-
+		// 检查设备是否归属用户
+		var device model.Device
+		result := db.Where("id = ? AND owner_id = ?", deviceID, userID).First(&device)
+		if result.Error != nil {
+			if result.Error == gorm.ErrRecordNotFound {
+				c.JSON(http.StatusForbidden, gin.H{"code": 4, "message": "无权获取该设备状态"})
+				return
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{"code": 3, "message": "查询数据库出错"})
+				return
+			}
+		}
 		var existing model.DeviceStatus
 		err := db.Where("device_id = ?", deviceID).First(&existing).Error
 		// now时间戳获取到毫秒
