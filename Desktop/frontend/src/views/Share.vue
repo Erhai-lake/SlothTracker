@@ -70,7 +70,10 @@ export default {
 		// 获取共享授权列表
 		async getShareAuthorizationList() {
 			try {
-				const RES = await axios.get(`${this.config.serverUrl}/api/share/authorizations/${this.config.userId}`, {
+				const RES = await axios.get(`${this.config.serverUrl}/api/share/authorizations`, {
+					params: {
+						user_id: this.config.userId
+					},
 					validateStatus: () => {
 						return true
 					}

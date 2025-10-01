@@ -9,8 +9,9 @@ export default {
 	components: {TabsTab, Tabs},
 	data() {
 		return {
-			activeTab: "current",
+			activeTab: "all",
 			config: {},
+			allDevices: [],
 			device: {
 				name: "",
 				platform: "",
@@ -26,6 +27,19 @@ export default {
 	},
 	beforeUnmount() {
 		EventBus.off("refresh", this.refresh)
+	},
+	computed: {
+		mergedDevices() {
+			const ALL_DEVICES = [...this.accountDevices, ...this.shareDevices]
+			// 根据设备ID去重
+			return ALL_DEVICES.reduce((acc, current) => {
+				const FOUND = acc.find(item => item.id === current.id)
+				if (!FOUND) {
+					acc.push(current)
+				}
+				return acc
+			}, [])
+		}
 	},
 	methods: {
 		// 刷新
@@ -99,6 +113,19 @@ export default {
 				console.error(error)
 				this.$toast.error("获取设备信息错误")
 			}
+		},
+		// 获取设备类型标签
+		getDeviceType(deviceId) {
+			const IS_ACCOUNT_DEVICE = this.accountDevices.some(device => device.id === deviceId)
+			const IS_SHARE_DEVICE = this.shareDevices.some(device => device.id === deviceId)
+			if (IS_ACCOUNT_DEVICE && IS_SHARE_DEVICE) {
+				return "账户 & 共享"
+			} else if (IS_ACCOUNT_DEVICE) {
+				return "账户设备"
+			} else if (IS_SHARE_DEVICE) {
+				return "共享设备"
+			}
+			return "未知"
 		}
 	}
 }
@@ -107,6 +134,21 @@ export default {
 <template>
 	<div class="home">
 		<tabs v-model="activeTab">
+			<tabs-tab name="all">
+				<template #label>全部</template>
+				<div v-if="(mergedDevices || []).length === 0" class="default"><span>暂无设备</span></div>
+				<div v-else class="item">
+					<router-link
+						v-for="item in mergedDevices"
+						:key="item.id"
+						:to="'/device/' + item.id"
+						class="container">
+						<p :title="device.name">{{ device.name }}</p>
+						<p :title="device.platform">{{ device.platform }}</p>
+						<p :title="device.description">{{ device.description }}</p>
+					</router-link>
+				</div>
+			</tabs-tab>
 			<tabs-tab name="current">
 				<template #label>当前</template>
 				<div class="item">
