@@ -1,7 +1,7 @@
 <script>
 import {useRoute} from "vue-router"
-import axios from "axios";
-import EventBus from "../services/EventBus.js";
+import axios from "axios"
+import EventBus from "../services/EventBus.js"
 
 export default {
 	name: "Device",

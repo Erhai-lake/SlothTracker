@@ -276,7 +276,7 @@ export default {
 					<div class="form-item">
 						<label>
 							密码：
-							<input v-model="loginRegistrationForm.password" placeholder="请输入登录密码"/>
+							<input type="password" v-model="loginRegistrationForm.password" placeholder="请输入登录密码"/>
 						</label>
 					</div>
 					<div class="form-item-but">
