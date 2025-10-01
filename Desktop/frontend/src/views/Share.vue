@@ -132,7 +132,10 @@ export default {
 		// 获取用户申请的授权列表
 		async getUserApplicationsList() {
 			try {
-				const RES = await axios.get(`${this.config.serverUrl}/api/share/query/${this.config.userId}`, {
+				const RES = await axios.get(`${this.config.serverUrl}/api/share/applications`, {
+					params: {
+						user_id: this.config.userId
+					},
 					validateStatus: () => {
 						return true
 					}

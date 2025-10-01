@@ -145,10 +145,11 @@ export default {
 		// 获取设备列表
 		async getDevices() {
 			try {
-				const RES = await axios.get(`${this.serverUrl}/api/devices/query/${JSON.parse(localStorage.getItem("config")).userId}`, {
-					validateStatus: () => {
-						return true
-					}
+				const RES = await axios.get(`${this.serverUrl}/api/device/list`, {
+					params: {
+						user_id: JSON.parse(localStorage.getItem("config")).userId
+					},
+					validateStatus: () => true
 				})
 				if (!RES.data.success) {
 					this.$toast.error(RES.data.data.message)

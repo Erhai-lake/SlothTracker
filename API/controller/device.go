@@ -98,10 +98,10 @@ func GetDeviceList(db any) http.HandlerFunc {
 			return
 		}
 
-		// 从路径参数获取user_id
-		userId := utils.GetPathParam(r, 2)
+		// 从查询参数获取user_id
+		userId := utils.GetQueryParam(r, "user_id")
 		if userId == "" {
-			utils.Error(w, http.StatusBadRequest, "参数错误")
+			utils.Error(w, http.StatusBadRequest, "参数错误: user_id 不能为空")
 			return
 		}
 
@@ -126,10 +126,10 @@ func GetSharedDeviceList(db any) http.HandlerFunc {
 			return
 		}
 
-		// 从路径参数获取user_id
-		userId := utils.GetPathParam(r, 3)
+		// 从查询参数获取user_id
+		userId := utils.GetQueryParam(r, "user_id")
 		if userId == "" {
-			utils.Error(w, http.StatusBadRequest, "参数错误")
+			utils.Error(w, http.StatusBadRequest, "参数错误: user_id 不能为空")
 			return
 		}
 
@@ -173,10 +173,10 @@ func GetDeviceInfo(db any) http.HandlerFunc {
 			return
 		}
 
-		// 从路径参数获取device_id
-		deviceId := utils.GetPathParam(r, 2)
+		// 从查询参数获取device_id
+		deviceId := utils.GetQueryParam(r, "device_id")
 		if deviceId == "" {
-			utils.Error(w, http.StatusBadRequest, "参数错误")
+			utils.Error(w, http.StatusBadRequest, "参数错误: device_id 不能为空")
 			return
 		}
 

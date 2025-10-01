@@ -59,7 +59,11 @@ export default {
 			const CONFIG = JSON.parse(localStorage.getItem("config"))
 			try {
 				const ORIGINAL = this.$refs.original
-				const RES = await axios.get(`${CONFIG.serverUrl}/api/status/query/${CONFIG.userId}/${this.route.params.id}`, {
+				const RES = await axios.get(`${CONFIG.serverUrl}/api/status`, {
+					params: {
+						user_id: CONFIG.userId,
+						device_id: this.route.params.id
+					},
 					validateStatus: () => {
 						return true
 					}

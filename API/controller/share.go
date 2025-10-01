@@ -94,10 +94,10 @@ func GetUserApplications(db any) http.HandlerFunc {
 			return
 		}
 
-		// 从路径参数获取user_id
-		userId := utils.GetPathParam(r, 2)
+		// 从查询参数获取user_id
+		userId := utils.GetQueryParam(r, "user_id")
 		if userId == "" {
-			utils.Error(w, http.StatusBadRequest, "参数错误")
+			utils.Error(w, http.StatusBadRequest, "参数错误: user_id 不能为空")
 			return
 		}
 
@@ -151,10 +151,10 @@ func GetSharedAuthorizations(db any) http.HandlerFunc {
 			return
 		}
 
-		// 从路径参数获取user_id
-		userId := utils.GetPathParam(r, 3)
+		// 从查询参数获取user_id
+		userId := utils.GetQueryParam(r, "user_id")
 		if userId == "" {
-			utils.Error(w, http.StatusBadRequest, "参数错误")
+			utils.Error(w, http.StatusBadRequest, "参数错误: user_id 不能为空")
 			return
 		}
 

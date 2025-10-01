@@ -3,7 +3,6 @@ package utils
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
 )
 
 // JSONResponse 统一的JSON响应
@@ -29,20 +28,16 @@ func Error(w http.ResponseWriter, status int, message string) {
 	})
 }
 
-// 从请求中获取路径参数
-func GetPathParam(r *http.Request, position int) string {
-	path := r.URL.Path
-	parts := make([]string, 0)
+// GetQueryParam 获取查询参数
+func GetQueryParam(r *http.Request, key string) string {
+	return r.URL.Query().Get(key)
+}
 
-	// 分割路径, 忽略空字符串
-	for part := range strings.SplitSeq(path, "/") {
-		if part != "" {
-			parts = append(parts, part)
-		}
+// GetQueryParamDefault 获取查询参数, 如果为空返回默认值
+func GetQueryParamDefault(r *http.Request, key, defaultValue string) string {
+	value := r.URL.Query().Get(key)
+	if value == "" {
+		return defaultValue
 	}
-
-	if position < len(parts) {
-		return parts[position]
-	}
-	return ""
+	return value
 }

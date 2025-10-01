@@ -38,7 +38,10 @@ export default {
 		// 获取设备信息
 		async getDevice() {
 			try {
-				const RES = await axios.get(`${this.config.serverUrl}/api/device/query/${this.config.deviceId}`, {
+				const RES = await axios.get(`${this.config.serverUrl}/api/device/info`, {
+					params: {
+						device_id: this.config.deviceId
+					},
 					validateStatus: () => {
 						return true
 					}
@@ -58,7 +61,10 @@ export default {
 		// 获取账户设备
 		async getAccountDevices() {
 			try {
-				const RES = await axios.get(`${this.config.serverUrl}/api/devices/query/${this.config.userId}`, {
+				const RES = await axios.get(`${this.config.serverUrl}/api/devices/list`, {
+					params: {
+						user_id: this.config.userId
+					},
 					validateStatus: () => {
 						return true
 					}
@@ -76,7 +82,10 @@ export default {
 		// 获取共享设备
 		async getShareDevices() {
 			try {
-				const RES = await axios.get(`${this.config.serverUrl}/api/devices/shared/query/${this.config.userId}`, {
+				const RES = await axios.get(`${this.config.serverUrl}/api/devices/shared`, {
+					params: {
+						user_id: this.config.userId
+					},
 					validateStatus: () => {
 						return true
 					}
@@ -110,13 +119,13 @@ export default {
 			</tabs-tab>
 			<tabs-tab name="account">
 				<template #label>账户</template>
-				<div class="default" v-if="(accountDevices || []).length === 0">没有设备</div>
-				<div class="item" v-else>
+				<div v-if="(accountDevices || []).length === 0" class="default">没有设备</div>
+				<div v-else class="item">
 					<router-link
-						class="container"
-						:to="'/device/' + item.id"
 						v-for="item in accountDevices"
-						:key="item.ID">
+						:key="item.ID"
+						:to="'/device/' + item.id"
+						class="container">
 						<p :title="item.name">{{ item.name }}</p>
 						<p :title="item.platform">{{ item.platform }}</p>
 						<p :title="item.description">{{ item.description }}</p>
@@ -125,13 +134,13 @@ export default {
 			</tabs-tab>
 			<tabs-tab name="share">
 				<template #label>共享</template>
-				<div class="default" v-if="(shareDevices || []).length === 0">没有设备</div>
-				<div class="item" v-else>
+				<div v-if="(shareDevices || []).length === 0" class="default">没有设备</div>
+				<div v-else class="item">
 					<router-link
-						class="container"
-						:to="'/device/' + item.id"
 						v-for="item in shareDevices"
-						:key="item.ID">
+						:key="item.ID"
+						:to="'/device/' + item.id"
+						class="container">
 						<p :title="item.name">{{ item.name }}</p>
 						<p :title="item.platform">{{ item.platform }}</p>
 						<p :title="item.description">{{ item.description }}</p>
@@ -142,7 +151,7 @@ export default {
 	</div>
 </template>
 
-<style scoped lang="less">
+<style lang="less" scoped>
 .home {
 	padding: 16px;
 	margin: 16px;

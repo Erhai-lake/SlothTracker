@@ -24,9 +24,15 @@ func GetStatus(db any) http.HandlerFunc {
 			return
 		}
 
-		// 从路径参数获取参数
-		userID := utils.GetPathParam(r, 2)
-		deviceID := utils.GetPathParam(r, 3)
+		// 从查询参数获取参数
+		userID := utils.GetQueryParam(r, "user_id")
+		deviceID := utils.GetQueryParam(r, "device_id")
+
+		// 校验参数
+		if deviceID == "" || userID == "" {
+			utils.Error(w, http.StatusBadRequest, "参数错误: user_id 和 device_id 不能为空")
+			return
+		}
 
 		// 校验参数
 		if deviceID == "" || userID == "" {
@@ -91,13 +97,13 @@ func UpdateStatus(db any) http.HandlerFunc {
 			return
 		}
 
-		// 从路径参数获取参数
-		userID := utils.GetPathParam(r, 3)
-		deviceID := utils.GetPathParam(r, 4)
+		// 从查询参数获取参数
+		userID := utils.GetQueryParam(r, "user_id")
+		deviceID := utils.GetQueryParam(r, "device_id")
 
 		// 校验参数
 		if deviceID == "" || userID == "" {
-			utils.Error(w, http.StatusBadRequest, "参数错误")
+			utils.Error(w, http.StatusBadRequest, "参数错误: user_id 和 device_id 不能为空")
 			return
 		}
 
