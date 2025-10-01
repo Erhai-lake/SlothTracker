@@ -145,7 +145,7 @@ export default {
 		// 获取设备列表
 		async getDevices() {
 			try {
-				const RES = await axios.get(`${this.serverUrl}/api/devices/${JSON.parse(localStorage.getItem("config")).userId}`, {
+				const RES = await axios.get(`${this.serverUrl}/api/devices/query/${JSON.parse(localStorage.getItem("config")).userId}`, {
 					validateStatus: () => {
 						return true
 					}

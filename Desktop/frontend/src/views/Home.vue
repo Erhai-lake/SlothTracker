@@ -38,7 +38,7 @@ export default {
 		// 获取设备信息
 		async getDevice() {
 			try {
-				const RES = await axios.get(`${this.config.serverUrl}/api/device/${this.config.deviceId}`, {
+				const RES = await axios.get(`${this.config.serverUrl}/api/device/query/${this.config.deviceId}`, {
 					validateStatus: () => {
 						return true
 					}
@@ -58,7 +58,7 @@ export default {
 		// 获取账户设备
 		async getAccountDevices() {
 			try {
-				const RES = await axios.get(`${this.config.serverUrl}/api/devices/${this.config.userId}`, {
+				const RES = await axios.get(`${this.config.serverUrl}/api/devices/query/${this.config.userId}`, {
 					validateStatus: () => {
 						return true
 					}
@@ -76,7 +76,7 @@ export default {
 		// 获取共享设备
 		async getShareDevices() {
 			try {
-				const RES = await axios.get(`${this.config.serverUrl}/api/devices/shared/${this.config.userId}`, {
+				const RES = await axios.get(`${this.config.serverUrl}/api/devices/shared/query/${this.config.userId}`, {
 					validateStatus: () => {
 						return true
 					}

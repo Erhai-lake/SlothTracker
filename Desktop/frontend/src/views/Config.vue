@@ -91,7 +91,7 @@ export default {
 		// 获取设备信息
 		async getDeviceInfo() {
 			try {
-				const RES = await axios.get(`${this.config.serverUrl}/api/device/${this.config.deviceId}`, {
+				const RES = await axios.get(`${this.config.serverUrl}/api/device/query/${this.config.deviceId}`, {
 					validateStatus: () => {
 						return true
 					}
@@ -177,7 +177,7 @@ export default {
 		// 获取账户信息
 		async getAccountInfo() {
 			try {
-				const RES = await axios.get(`${this.config.serverUrl}/api/user/${this.config.userId}`, {
+				const RES = await axios.get(`${this.config.serverUrl}/api/user/query/${this.config.userId}`, {
 					validateStatus: () => {
 						return true
 					}
