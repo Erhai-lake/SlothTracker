@@ -55,11 +55,11 @@ export default {
 						return true
 					}
 				})
-				if (RES.data.code !== 0) {
+				if (!RES.data.success) {
 					this.$toast.error("服务器地址错误")
 					return
 				}
-				this.$toast.success(`服务器延迟: ${RES.data.message}`)
+				this.$toast.success(`服务器延迟: ${RES.data.data.latency}`)
 			} catch (error) {
 				console.error(error)
 				this.$toast.error("服务器地址错误")
@@ -96,12 +96,12 @@ export default {
 						return true
 					}
 				})
-				if (RES.data.code !== 0) {
-					this.$toast.error(RES.data.message)
+				if (!RES.data.success) {
+					this.$toast.error(RES.data.data.message)
 					return
 				}
-				this.deviceForm.name = RES.data.device.name
-				this.deviceForm.description = RES.data.device.description
+				this.deviceForm.name = RES.data.data.device.name
+				this.deviceForm.description = RES.data.data.device.description
 			} catch (error) {
 				console.error(error)
 				this.$toast.error("获取设备信息错误")
@@ -124,11 +124,11 @@ export default {
 						return true
 					}
 				})
-				if (RES.data.code !== 0) {
-					this.$toast.error(RES.data.message)
+				if (!RES.data.success) {
+					this.$toast.error(RES.data.data.message)
 					return
 				}
-				this.$toast.success(RES.data.message)
+				this.$toast.success(RES.data.data.message)
 			} catch (error) {
 				console.error(error)
 				this.$toast.error("保存设备信息错误")
@@ -154,11 +154,11 @@ export default {
 							return true
 						}
 					})
-					if (RES.data.code !== 0) {
-						this.$toast.error(RES.data.message)
+					if (!RES.data.success) {
+						this.$toast.error(RES.data.data.message)
 						return
 					}
-					this.$toast.success(RES.data.message)
+					this.$toast.success(RES.data.data.message)
 				} catch (error) {
 					console.error(error)
 					this.$toast.error("注销账设备错误")
@@ -182,12 +182,12 @@ export default {
 						return true
 					}
 				})
-				if (RES.data.code !== 0) {
-					this.$toast.error(RES.data.message)
+				if (!RES.data.success) {
+					this.$toast.error(RES.data.data.message)
 					return
 				}
-				this.accountForm.oldName = RES.data.user.name
-				this.accountForm.newName = RES.data.user.name
+				this.accountForm.oldName = RES.data.data.user.name
+				this.accountForm.newName = RES.data.data.user.name
 			} catch (error) {
 				console.error(error)
 				this.$toast.error("获取账户信息错误")
@@ -213,11 +213,11 @@ export default {
 						return true
 					}
 				})
-				if (RES.data.code !== 0) {
-					this.$toast.error(RES.data.message)
+				if (!RES.data.success) {
+					this.$toast.error(RES.data.data.message)
 					return
 				}
-				this.$toast.success(RES.data.message)
+				this.$toast.success(RES.data.data.message)
 				this.accountForm.oldName = this.accountForm.newName
 			} catch (error) {
 				console.error(error)
@@ -236,11 +236,11 @@ export default {
 						return true
 					}
 				})
-				if (RES.data.code !== 0) {
-					this.$toast.error(RES.data.message)
+				if (!RES.data.success) {
+					this.$toast.error(RES.data.data.message)
 					return
 				}
-				this.$toast.success(RES.data.message)
+				this.$toast.success(RES.data.data.message)
 			} catch (error) {
 				console.error(error)
 				this.$toast.error("保存账户信息错误")
@@ -275,11 +275,11 @@ export default {
 							return true
 						}
 					})
-					if (RES.data.code !== 0) {
-						this.$toast.error(RES.data.message)
+					if (!RES.data.success) {
+						this.$toast.error(RES.data.data.message)
 						return
 					}
-					this.$toast.success(RES.data.message)
+					this.$toast.success(RES.data.data.message)
 				} catch (error) {
 					console.error(error)
 					this.$toast.error("注销账户错误")
@@ -312,16 +312,16 @@ export default {
 					<div class="form-item">
 						<label>
 							背景图开关：
-							<input type="checkbox" v-model="regularForm.background"/>
+							<input v-model="regularForm.background" type="checkbox"/>
 						</label>
 					</div>
 					<div class="form-item-but">
-						<button @click="ping" style="--primary-color: #3ecd39">测试地址</button>
+						<button style="--primary-color: #3ecd39" @click="ping">测试地址</button>
 						<button @click="saveRegular">保存</button>
 					</div>
 					<div class="form-item-but">
 						<button @click="refresh">刷新页面</button>
-						<button @click="resetConfig" style="--primary-color: #ff8080">重置设置</button>
+						<button style="--primary-color: #ff8080" @click="resetConfig">重置设置</button>
 					</div>
 				</div>
 			</tabs-tab>
@@ -338,7 +338,7 @@ export default {
 					</div>
 					<div class="form-item-but">
 						<button @click="saveDevice">保存</button>
-						<button @click="writeOffDevice" style="--primary-color: #ff8080">注销设备</button>
+						<button style="--primary-color: #ff8080" @click="writeOffDevice">注销设备</button>
 					</div>
 				</div>
 			</tabs-tab>
@@ -351,12 +351,12 @@ export default {
 					</div>
 					<div class="form-item">
 						<label>重置密码：</label>
-						<input type="password" v-model="accountForm.oldPassword" placeholder="输入旧密码"/>
-						<input type="password" v-model="accountForm.newPassword" placeholder="输入新密码"/>
+						<input v-model="accountForm.oldPassword" placeholder="输入旧密码" type="password"/>
+						<input v-model="accountForm.newPassword" placeholder="输入新密码" type="password"/>
 					</div>
 					<div class="form-item-but">
 						<button @click="saveAccount">保存</button>
-						<button @click="writeOffAccount" style="--primary-color: #ff8080">注销账户</button>
+						<button style="--primary-color: #ff8080" @click="writeOffAccount">注销账户</button>
 					</div>
 				</div>
 			</tabs-tab>
@@ -364,7 +364,7 @@ export default {
 	</div>
 </template>
 
-<style scoped lang="less">
+<style lang="less" scoped>
 .config {
 	padding: 16px;
 	width: 100%;

@@ -1,68 +1,63 @@
 package router
 
 import (
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
+	"net/http"
 	"sloth-tracker/api/controller"
+	"sloth-tracker/api/middleware"
+	"strings"
 )
 
-func SetupRouter(db *gorm.DB) *gin.Engine {
-	r := gin.Default()
+func SetupRouter(db any) http.Handler {
+	mux := http.NewServeMux()
 
-	// 添加CORS配置
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
-		AllowHeaders:     []string{"Origin", "Content-Type"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-	}))
+	// 基础路由
+	mux.HandleFunc("GET /api/ping", controller.Ping(db))
 
-	// ping
-	r.GET("/api/ping", controller.Ping(db))
+	// 用户相关路由
+	mux.HandleFunc("POST /api/user/register", controller.RegisterUser(db))
+	mux.HandleFunc("POST /api/user/login", controller.LoginUser(db))
+	mux.HandleFunc("PUT /api/user/reset_name", controller.ResetUsername(db))
+	mux.HandleFunc("PUT /api/user/reset_password", controller.ResetPassword(db))
+	mux.HandleFunc("GET /api/user/{user_id}", controller.GetUserInfo(db))
+	mux.HandleFunc("DELETE /api/user/delete", controller.DeleteUser(db))
 
-	// 用户注册
-	r.POST("/api/user/register", controller.RegisterUser(db))
-	// 用户登录
-	r.POST("/api/user/login", controller.LoginUser(db))
-	// 重置用户名
-	r.PUT("/api/user/reset_name", controller.ResetUsername(db))
-	// 重置密码
-	r.PUT("/api/user/reset_password", controller.ResetPassword(db))
-	// 获取用户信息
-	r.GET("/api/user/:user_id", controller.GetUserInfo(db))
-	// 注销用户
-	r.DELETE("/api/user/delete", controller.DeleteUser(db))
+	// 共享相关路由
+	mux.HandleFunc("POST /api/share/apply", controller.ApplyShare(db))
+	mux.HandleFunc("GET /api/share/{user_id}", controller.GetUserApplications(db))
+	mux.HandleFunc("GET /api/share/authorizations/{user_id}", controller.GetSharedAuthorizations(db))
+	mux.HandleFunc("PUT /api/share/authorize", controller.AuthorizeDevice(db))
+	mux.HandleFunc("DELETE /api/share/delete", controller.DeleteShare(db))
 
-	// 共享申请
-	r.POST("/api/share/apply", controller.ApplyShare(db))
-	// 获取用户申请的授权
-	r.GET("/api/share/:user_id", controller.GetUserApplications(db))
-	// 获取共享授权列表
-	r.GET("/api/share/authorizations/:user_id", controller.GetSharedAuthorizations(db))
-	// 授权设备
-	r.PUT("/api/share/authorize", controller.AuthorizeDevice(db))
-	// 删除共享申请
-	r.DELETE("/api/share/delete", controller.DeleteShare(db))
+	// 设备相关路由
+	mux.HandleFunc("POST /api/device/register", controller.RegisterDevice(db))
+	mux.HandleFunc("PUT /api/device/update", controller.UpdateDeviceInfo(db))
+	mux.HandleFunc("GET /api/devices/{user_id}", controller.GetDeviceList(db))
+	mux.HandleFunc("GET /api/devices/shared/{user_id}", controller.GetSharedDeviceList(db))
+	mux.HandleFunc("GET /api/device/{device_id}", controller.GetDeviceInfo(db))
+	mux.HandleFunc("DELETE /api/device/delete", controller.DeleteDevice(db))
 
-	// 设备注册
-	r.POST("/api/device/register", controller.RegisterDevice(db))
-	// 修改设备信息
-	r.PUT("/api/device/update", controller.UpdateDeviceInfo(db))
-	// 获取设备列表
-	r.GET("/api/devices/:user_id", controller.GetDeviceList(db))
-	// 获取共享设备列表
-	r.GET("/api/devices/shared/:user_id", controller.GetSharedDeviceList(db))
-	// 获取设备信息
-	r.GET("/api/device/:device_id", controller.GetDeviceInfo(db))
-	// 删除设备
-	r.DELETE("/api/device/delete", controller.DeleteDevice(db))
+	// 状态相关路由
+	mux.HandleFunc("PUT /api/status/update/{user_id}/{device_id}", controller.UpdateStatus(db))
+	mux.HandleFunc("GET /api/status/{user_id}/{device_id}", controller.GetStatus(db))
 
-	// 状态更新
-	r.PUT("/api/status/update/:user_id/:device_id", controller.UpdateStatus(db))
-	// 获取设备状态
-	r.GET("/api/status/:user_id/:device_id", controller.GetStatus(db))
+	// 添加中间件
+	handler := middleware.CORS(mux)
+	handler = middleware.Logger(handler)
 
-	return r
+	return handler
+}
+
+// 路径参数提取辅助函数
+func GetPathParam(r *http.Request, param string) string {
+	path := r.URL.Path
+	parts := strings.Split(path, "/")
+	// 在路径中查找参数位置
+	for i, part := range parts {
+		if part == param {
+			if i+1 < len(parts) {
+				return parts[i+1]
+			}
+		}
+	}
+	return ""
 }

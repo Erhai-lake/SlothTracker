@@ -43,13 +43,13 @@ export default {
 						return true
 					}
 				})
-				if (RES.data.code !== 0) {
-					this.$toast.error(RES.data.message)
+				if (!RES.data.success) {
+					this.$toast.error(RES.data.data.message)
 					return
 				}
-				this.device.name = RES.data.device.name
-				this.device.platform = RES.data.device.platform
-				this.device.description = RES.data.device.description
+				this.device.name = RES.data.data.device.name
+				this.device.platform = RES.data.data.device.platform
+				this.device.description = RES.data.data.device.description
 			} catch (error) {
 				console.error(error)
 				this.$toast.error("获取设备信息错误")
@@ -63,11 +63,11 @@ export default {
 						return true
 					}
 				})
-				if (RES.data.code !== 0) {
-					this.$toast.error(RES.data.message)
+				if (!RES.data.success) {
+					this.$toast.error(RES.data.data.message)
 					return
 				}
-				this.accountDevices = RES.data.devices
+				this.accountDevices = RES.data.data.devices
 			} catch (error) {
 				console.error(error)
 				this.$toast.error("获取设备信息错误")
@@ -81,11 +81,11 @@ export default {
 						return true
 					}
 				})
-				if (RES.data.code !== 0) {
-					this.$toast.error(RES.data.message)
+				if (!RES.data.success) {
+					this.$toast.error(RES.data.data.message)
 					return
 				}
-				this.shareDevices = RES.data.devices
+				this.shareDevices = RES.data.data.devices
 			} catch (error) {
 				console.error(error)
 				this.$toast.error("获取设备信息错误")

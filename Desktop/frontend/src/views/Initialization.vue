@@ -66,11 +66,11 @@ export default {
 						return true
 					}
 				})
-				if (RES.data.code !== 0) {
+				if (!RES.data.success) {
 					this.$toast.error("服务器地址错误")
 					return
 				}
-				this.$toast.success(`服务器延迟: ${RES.data.message}`)
+				this.$toast.success(`服务器延迟: ${RES.data.data.latency}`)
 			} catch (error) {
 				console.error(error)
 				this.$toast.error("服务器地址错误")
@@ -122,12 +122,12 @@ export default {
 							return true
 						}
 					})
-				if (RES.data.code !== 0) {
-					this.$toast.error(RES.data.message)
+				if (!RES.data.success) {
+					this.$toast.error(RES.data.data.message)
 					return
 				}
-				this.$toast.success(RES.data.message)
-				userId = RES.data.user_id
+				this.$toast.success(RES.data.data.message)
+				userId = RES.data.data.user_id
 			} catch (error) {
 				console.error(error)
 				this.$toast.error("登录注册错误")
@@ -150,12 +150,12 @@ export default {
 						return true
 					}
 				})
-				if (RES.data.code !== 0) {
-					this.$toast.error(RES.data.message)
+				if (!RES.data.success) {
+					this.$toast.error(RES.data.data.message)
 					return
 				}
-				this.$toast.success(RES.data.message)
-				this.devices = RES.data.devices
+				this.$toast.success(RES.data.data.message)
+				this.devices = RES.data.data.devices
 			} catch (error) {
 				console.error(error)
 			}
@@ -178,8 +178,8 @@ export default {
 							return true
 						}
 					})
-					if (RES.data.code !== 0) {
-						this.$toast.error(RES.data.message)
+					if (!RES.data.success) {
+						this.$toast.error(RES.data.data.message)
 						return
 					}
 				} catch (error) {
@@ -214,12 +214,12 @@ export default {
 							return true
 						}
 					})
-				if (RES.data.code !== 0) {
-					this.$toast.error(RES.data.message)
+				if (!RES.data.success) {
+					this.$toast.error(RES.data.data.message)
 					return
 				}
-				this.$toast.success(RES.data.message)
-				this.deviceForm.deviceId = RES.data.device_id
+				this.$toast.success(RES.data.data.message)
+				this.deviceForm.deviceId = RES.data.data.device_id
 				await this.saveDeviceId(2)
 			} catch (error) {
 				console.error(error)
@@ -276,11 +276,14 @@ export default {
 					<div class="form-item">
 						<label>
 							密码：
-							<input type="password" v-model="loginRegistrationForm.password" placeholder="请输入登录密码"/>
+							<input
+								v-model="loginRegistrationForm.password"
+								placeholder="请输入登录密码"
+								type="password"/>
 						</label>
 					</div>
 					<div class="form-item-but">
-						<button @click="loginRegistration(1)" style="--primary-color: #3ecd39">登录</button>
+						<button style="--primary-color: #3ecd39" @click="loginRegistration(1)">登录</button>
 						<button @click="loginRegistration(2)">注册</button>
 					</div>
 				</div>
@@ -291,14 +294,14 @@ export default {
 					<h2>选择已有设备</h2>
 					<div class="form-item">
 						<select v-model="deviceForm.deviceId">
-							<option value="" disabled>请选择设备</option>
+							<option disabled value="">请选择设备</option>
 							<option v-for="device in devices" :key="device.id" :value="device.id">
 								{{ device.name }}
 							</option>
 						</select>
 					</div>
 					<div class="form-item-but">
-						<button @click="saveDeviceId" style="--primary-color: #3ecd39">确定</button>
+						<button style="--primary-color: #3ecd39" @click="saveDeviceId">确定</button>
 						<button @click="activeTab = 'registrationDevice'">注册新的</button>
 					</div>
 				</div>
@@ -320,7 +323,7 @@ export default {
 						</label>
 					</div>
 					<div class="form-item-but">
-						<button @click="registrationDevice" style="--primary-color: #3ecd39">注册</button>
+						<button style="--primary-color: #3ecd39" @click="registrationDevice">注册</button>
 						<button @click="activeTab = 'selectDevice'">选择已有设备</button>
 					</div>
 				</div>
@@ -329,7 +332,7 @@ export default {
 	</div>
 </template>
 
-<style scoped lang="less">
+<style lang="less" scoped>
 .initialization {
 	padding: 16px;
 	width: 100%;

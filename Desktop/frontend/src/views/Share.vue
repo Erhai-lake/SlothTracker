@@ -56,11 +56,11 @@ export default {
 						return true
 					}
 				})
-				if (RES.data.code !== 0) {
-					this.$toast.error(RES.data.message)
+				if (!RES.data.success) {
+					this.$toast.error(RES.data.data.message)
 					return
 				}
-				this.$toast.success(RES.data.message)
+				this.$toast.success(RES.data.data.message)
 				this.deviceId = ""
 			} catch (error) {
 				console.error(error)
@@ -75,11 +75,11 @@ export default {
 						return true
 					}
 				})
-				if (RES.data.code !== 0) {
-					this.$toast.error(RES.data.message)
+				if (!RES.data.success) {
+					this.$toast.error(RES.data.data.message)
 					return
 				}
-				this.shareAuthorizations = RES.data.authorizations
+				this.shareAuthorizations = RES.data.data.authorizations
 			} catch (error) {
 				console.error(error)
 				this.$toast.error("获取共享授权列表错误")
@@ -97,11 +97,11 @@ export default {
 							return true
 						}
 					})
-					if (RES.data.code !== 0) {
-						this.$toast.error(RES.data.message)
+					if (!RES.data.success) {
+						this.$toast.error(RES.data.data.message)
 						return
 					}
-					this.$toast.success(RES.data.message)
+					this.$toast.success(RES.data.data.message)
 					await this.getShareAuthorizationList()
 				} catch (error) {
 					console.error(error)
@@ -117,11 +117,11 @@ export default {
 							return true
 						}
 					})
-					if (RES.data.code !== 0) {
-						this.$toast.error(RES.data.message)
+					if (!RES.data.success) {
+						this.$toast.error(RES.data.data.message)
 						return
 					}
-					this.$toast.success(RES.data.message)
+					this.$toast.success(RES.data.data.message)
 					await this.getShareAuthorizationList()
 				} catch (error) {
 					console.error(error)
@@ -137,11 +137,11 @@ export default {
 						return true
 					}
 				})
-				if (RES.data.code !== 0) {
-					this.$toast.error(RES.data.message)
+				if (!RES.data.success) {
+					this.$toast.error(RES.data.data.message)
 					return
 				}
-				this.userApplications = RES.data.applications
+				this.userApplications = RES.data.data.applications
 			} catch (error) {
 				console.error(error)
 				this.$toast.error("获取用户申请的授权列表错误")

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+	"net/http"
 	"runtime"
 	"runtime/debug"
 	"sloth-tracker/api/router"
@@ -9,11 +11,22 @@ import (
 
 func main() {
 	// 限制CPU使用(1核)
-	runtime.GOMAXPROCS(1)
+	CPUCore := 1
+	runtime.GOMAXPROCS(CPUCore)
 	// 设置内存限制(500MB)
-	debug.SetMemoryLimit(500 * 1024 * 1024)
-
+	MemoryLimit := int64(500 * 1024 * 1024)
+	debug.SetMemoryLimit(MemoryLimit)
+	// 初始化数据库
 	db := storage.InitDB()
-	r := router.SetupRouter(db)
-	r.Run(":8080")
+	// 获取路由处理器
+	handler := router.SetupRouter(db)
+	Port := "8080"
+	// 启动HTTP服务器
+	if err := http.ListenAndServe(":"+Port, handler); err != nil {
+		log.Fatal("❌ 服务器启动失败: ", err)
+	}
+
+	log.Printf("🚀 服务器启动在 http://localhost:%s", Port)
+	log.Printf("💾 内存限制: %dMB", MemoryLimit/(1024*1024))
+	log.Printf("⚡ CPU核心: %d", CPUCore)
 }

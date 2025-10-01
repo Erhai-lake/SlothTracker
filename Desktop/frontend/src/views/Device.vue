@@ -65,70 +65,70 @@ export default {
 					}
 				})
 				// 原始数据
-				ORIGINAL.innerHTML = JSON.stringify(RES.data, null, 2)
-				if (RES.data.code !== 0) {
-					this.$toast.error(RES.data.message)
+				ORIGINAL.innerHTML = JSON.stringify(RES.data.data, null, 2)
+				if (!RES.data.success) {
+					this.$toast.error(RES.data.data.message)
 					return
 				}
 				this.status = {
-					id: RES.data.status.id,
-					device_id: RES.data.status.device_id,
-					source: RES.data.status.source,
+					id: RES.data.data.status.id,
+					device_id: RES.data.data.status.device_id,
+					source: RES.data.data.status.source,
 					timestamp: [
-						this.formatTimestamp(RES.data.status.timestamp),
-						RES.data.status.timestamp + 60 * 1000 < Date.now() ? "no" : "yes",
-						this.formatTime(RES.data.status.timestamp),
-						RES.data.status.timestamp
+						this.formatTimestamp(RES.data.data.status.timestamp),
+						RES.data.data.status.timestamp + 60 * 1000 < Date.now() ? "no" : "yes",
+						this.formatTime(RES.data.data.status.timestamp),
+						RES.data.data.status.timestamp
 					],
 					battery: {
 						charging: [
-							RES.data.status.battery.charging === 1 ? "充电中" : RES.data.status.battery.charging === 2 ? "未充电" : "已充满",
-							RES.data.status.battery.charging === 1 ? "yes" : RES.data.status.battery.charging === 2 ? "no" : ""
+							RES.data.data.status.battery.charging === 1 ? "充电中" : RES.data.data.status.battery.charging === 2 ? "未充电" : "已充满",
+							RES.data.data.status.battery.charging === 1 ? "yes" : RES.data.data.status.battery.charging === 2 ? "no" : ""
 						],
-						level: RES.data.status.battery.level + " %",
-						temperature: RES.data.status.battery.temperature + " ℃",
-						capacity: this.formatCapacity(RES.data.status.battery.capacity)
+						level: RES.data.data.status.battery.level + " %",
+						temperature: RES.data.data.status.battery.temperature + " ℃",
+						capacity: this.formatCapacity(RES.data.data.status.battery.capacity)
 					},
 					network: {
 						wifiConnected: [
-							RES.data.status.network.wifi_connected === 1 ? "已连接 ✅" : RES.data.status.network.wifi_connected === 2 ? "未连接 ❌" : "未知",
-							RES.data.status.network.wifi_connected === 1 ? "yes" : RES.data.status.network.wifi_connected === 2 ? "no" : ""
+							RES.data.data.status.network.wifi_connected === 1 ? "已连接 ✅" : RES.data.data.status.network.wifi_connected === 2 ? "未连接 ❌" : "未知",
+							RES.data.data.status.network.wifi_connected === 1 ? "yes" : RES.data.data.status.network.wifi_connected === 2 ? "no" : ""
 						],
-						wifiSSID: RES.data.status.network.wifi_ssid,
+						wifiSSID: RES.data.data.status.network.wifi_ssid,
 						mobileDataActive: [
-							RES.data.status.network.mobile_data_active === 1 ? "已激活 ✅" : RES.data.status.network.mobile_data_active === 2 ? "未激活 ❌" : "未知",
-							RES.data.status.network.mobile_data_active === 1 ? "yes" : RES.data.status.network.mobile_data_active === 2 ? "no" : ""
+							RES.data.data.status.network.mobile_data_active === 1 ? "已激活 ✅" : RES.data.data.status.network.mobile_data_active === 2 ? "未激活 ❌" : "未知",
+							RES.data.data.status.network.mobile_data_active === 1 ? "yes" : RES.data.data.status.network.mobile_data_active === 2 ? "no" : ""
 						],
-						mobileSignalDbm: RES.data.status.network.mobile_signal_dbm + " dBm",
-						networkType: RES.data.status.network.network_type,
-						trafficUsedMb: this.formatTraffic(RES.data.status.network.traffic_used_mb),
-						uploadSpeedKbps: this.formatSpeed(RES.data.status.network.upload_speed_kbps),
-						downloadSpeedKbps: this.formatSpeed(RES.data.status.network.download_speed_kbps)
+						mobileSignalDbm: RES.data.data.status.network.mobile_signal_dbm + " dBm",
+						networkType: RES.data.data.status.network.network_type,
+						trafficUsedMb: this.formatTraffic(RES.data.data.status.network.traffic_used_mb),
+						uploadSpeedKbps: this.formatSpeed(RES.data.data.status.network.upload_speed_kbps),
+						downloadSpeedKbps: this.formatSpeed(RES.data.data.status.network.download_speed_kbps)
 					},
 					foreground: {
-						appName: RES.data.status.foreground.app_name,
-						appTitle: RES.data.status.foreground.app_title,
+						appName: RES.data.data.status.foreground.app_name,
+						appTitle: RES.data.data.status.foreground.app_title,
 						speakerPlaying: [
-							RES.data.status.foreground.speaker_playing === 1 ? "正在播放 ✅" : RES.data.status.foreground.speaker_playing === 2 ? "未播放 ❌" : "未知",
-							RES.data.status.foreground.speaker_playing === 1 ? "yes" : RES.data.status.foreground.speaker_playing === 2 ? "no" : ""
+							RES.data.data.status.foreground.speaker_playing === 1 ? "正在播放 ✅" : RES.data.data.status.foreground.speaker_playing === 2 ? "未播放 ❌" : "未知",
+							RES.data.data.status.foreground.speaker_playing === 1 ? "yes" : RES.data.data.status.foreground.speaker_playing === 2 ? "no" : ""
 						]
 					},
 					other: {
 						screenOn: [
-							RES.data.status.other.screen_on === 1 ? "屏幕已打开 ✅" : RES.data.status.other.screen_on === 2 ? "屏幕已关闭 ❌" : "未知",
-							RES.data.status.other.screen_on === 1 ? "yes" : RES.data.status.other.screen_on === 2 ? "no" : ""
+							RES.data.data.status.other.screen_on === 1 ? "屏幕已打开 ✅" : RES.data.data.status.other.screen_on === 2 ? "屏幕已关闭 ❌" : "未知",
+							RES.data.data.status.other.screen_on === 1 ? "yes" : RES.data.data.status.other.screen_on === 2 ? "no" : ""
 						],
 						isChargingViaUSB: [
-							RES.data.status.other.is_charging_via_usb === 1 ? "通过 USB 充电 ✅" : RES.data.status.other.is_charging_via_usb === 2 ? "未通过 USB 充电 ❌" : "未知",
-							RES.data.status.other.is_charging_via_usb === 1 ? "yes" : RES.data.status.other.is_charging_via_usb === 2 ? "no" : ""
+							RES.data.data.status.other.is_charging_via_usb === 1 ? "通过 USB 充电 ✅" : RES.data.data.status.other.is_charging_via_usb === 2 ? "未通过 USB 充电 ❌" : "未知",
+							RES.data.data.status.other.is_charging_via_usb === 1 ? "yes" : RES.data.data.status.other.is_charging_via_usb === 2 ? "no" : ""
 						],
 						isChargingViaAC: [
-							RES.data.status.other.is_charging_via_ac === 1 ? "通过 AC 充电 ✅" : RES.data.status.other.is_charging_via_ac === 2 ? "未通过 AC 充电 ❌" : "未知",
-							RES.data.status.other.is_charging_via_ac === 1 ? "yes" : RES.data.status.other.is_charging_via_ac === 2 ? "no" : ""
+							RES.data.data.status.other.is_charging_via_ac === 1 ? "通过 AC 充电 ✅" : RES.data.data.status.other.is_charging_via_ac === 2 ? "未通过 AC 充电 ❌" : "未知",
+							RES.data.data.status.other.is_charging_via_ac === 1 ? "yes" : RES.data.data.status.other.is_charging_via_ac === 2 ? "no" : ""
 						],
 						isLowPowerMode: [
-							RES.data.status.other.is_low_power_mode === 1 ? "低功耗模式 ✅" : RES.data.status.other.is_low_power_mode === 2 ? "非低功耗模式 ❌" : "未知",
-							RES.data.status.other.is_low_power_mode === 1 ? "yes" : RES.data.status.other.is_low_power_mode === 2 ? "no" : ""
+							RES.data.data.status.other.is_low_power_mode === 1 ? "低功耗模式 ✅" : RES.data.data.status.other.is_low_power_mode === 2 ? "非低功耗模式 ❌" : "未知",
+							RES.data.data.status.other.is_low_power_mode === 1 ? "yes" : RES.data.data.status.other.is_low_power_mode === 2 ? "no" : ""
 						]
 					}
 				}

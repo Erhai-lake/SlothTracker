@@ -1,228 +1,316 @@
 package controller
 
 import (
+	"encoding/json"
 	"net/http"
 	"sloth-tracker/api/model"
+	"sloth-tracker/api/utils"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
 // 注册用户 POST
-func RegisterUser(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
+func RegisterUser(db any) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			utils.Error(w, http.StatusMethodNotAllowed, "方法不允许")
+			return
+		}
+
 		var req struct {
 			Name     string `json:"name"`
 			Password string `json:"password"`
 		}
-		// 校验参数
-		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusOK, gin.H{"code": 1, "message": "参数错误"})
+
+		// 解析JSON参数
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			utils.Error(w, http.StatusBadRequest, "参数错误")
 			return
 		}
+
+		gormDB := db.(*gorm.DB)
+
 		// 检查用户名是否已存在
 		var existingUser model.User
-		if err := db.Where("name = ?", req.Name).First(&existingUser).Error; err == nil {
-			c.JSON(http.StatusOK, gin.H{"code": 2, "message": "用户名已存在"})
+		if err := gormDB.Where("name = ?", req.Name).First(&existingUser).Error; err == nil {
+			utils.Error(w, http.StatusOK, "用户名已存在")
 			return
 		}
+
 		userId := uuid.New().String()
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"code": 3, "message": "密码加密失败"})
+			utils.Error(w, http.StatusInternalServerError, "密码加密失败")
 			return
 		}
+
 		user := model.User{
 			Id:           userId,
 			Name:         req.Name,
 			Password:     string(hashedPassword),
 			RegisteredAt: time.Now(),
 		}
-		db.Create(&user)
+		gormDB.Create(&user)
 
-		c.JSON(http.StatusOK, gin.H{"code": 0, "message": "注册成功", "user_id": userId})
+		utils.Success(w, map[string]any{
+			"message": "注册成功",
+			"user_id": userId,
+		})
 	}
 }
 
 // 登录用户 POST
-func LoginUser(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
+func LoginUser(db any) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			utils.Error(w, http.StatusMethodNotAllowed, "方法不允许")
+			return
+		}
+
 		var req struct {
 			Name     string `json:"name"`
 			Password string `json:"password"`
 		}
-		// 校验参数
-		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusOK, gin.H{"code": 1, "message": "参数错误"})
+
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			utils.Error(w, http.StatusBadRequest, "参数错误")
 			return
 		}
+
+		gormDB := db.(*gorm.DB)
+
 		// 检查用户名是否存在
 		var user model.User
-		if err := db.Where("name = ?", req.Name).First(&user).Error; err != nil {
-			c.JSON(http.StatusOK, gin.H{"code": 2, "message": "用户名或密码错误"})
+		if err := gormDB.Where("name = ?", req.Name).First(&user).Error; err != nil {
+			utils.Error(w, http.StatusOK, "用户名或密码错误")
 			return
 		}
+
 		// 检查密码是否正确
 		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-			c.JSON(http.StatusOK, gin.H{"code": 3, "message": "用户名或密码错误"})
+			utils.Error(w, http.StatusOK, "用户名或密码错误")
 			return
 		}
+
 		// 登录成功
-		c.JSON(http.StatusOK, gin.H{"code": 0, "message": "登录成功", "user_id": user.Id})
+		utils.Success(w, map[string]any{
+			"message": "登录成功",
+			"user_id": user.Id,
+		})
 	}
 }
 
 // 重置用户名 PUT
-func ResetUsername(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
+func ResetUsername(db any) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPut {
+			utils.Error(w, http.StatusMethodNotAllowed, "方法不允许")
+			return
+		}
+
 		var req struct {
 			Id   string `json:"id"`
 			Name string `json:"name"`
 		}
-		// 校验参数
-		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusOK, gin.H{"code": 1, "message": "参数错误"})
+
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			utils.Error(w, http.StatusBadRequest, "参数错误")
 			return
 		}
+
+		gormDB := db.(*gorm.DB)
+
 		// 检查用户名是否已存在
 		var existingUser model.User
-		if err := db.Where("name = ?", req.Name).First(&existingUser).Error; err == nil {
-			c.JSON(http.StatusOK, gin.H{"code": 2, "message": "用户名已存在"})
+		if err := gormDB.Where("name = ?", req.Name).First(&existingUser).Error; err == nil {
+			utils.Error(w, http.StatusOK, "用户名已存在")
 			return
 		}
+
 		// 更新用户名
 		var user model.User
-		if err := db.First(&user, "id = ?", req.Id).Error; err != nil {
-			c.JSON(http.StatusOK, gin.H{"code": 3, "message": "用户不存在"})
+		if err := gormDB.First(&user, "id = ?", req.Id).Error; err != nil {
+			utils.Error(w, http.StatusOK, "用户不存在")
 			return
 		}
+
 		user.Name = req.Name
-		db.Save(&user)
-		c.JSON(http.StatusOK, gin.H{"code": 0, "message": "用户名重置成功"})
+		gormDB.Save(&user)
+
+		utils.Success(w, map[string]any{
+			"message": "用户名重置成功",
+		})
 	}
 }
 
 // 重置密码 PUT
-func ResetPassword(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
+func ResetPassword(db any) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPut {
+			utils.Error(w, http.StatusMethodNotAllowed, "方法不允许")
+			return
+		}
+
 		var req struct {
 			Id          string `json:"id"`
 			OldPassword string `json:"old_password"`
 			NewPassword string `json:"new_password"`
 		}
-		// 校验参数
-		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusOK, gin.H{"code": 1, "message": "参数错误"})
+
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			utils.Error(w, http.StatusBadRequest, "参数错误")
 			return
 		}
-		// 检查用户名是否存在
+
+		gormDB := db.(*gorm.DB)
+
+		// 检查用户是否存在
 		var user model.User
-		if err := db.Where("id = ?", req.Id).First(&user).Error; err != nil {
-			c.JSON(http.StatusOK, gin.H{"code": 2, "message": "用户名或密码错误"})
+		if err := gormDB.Where("id = ?", req.Id).First(&user).Error; err != nil {
+			utils.Error(w, http.StatusOK, "用户名或密码错误")
 			return
 		}
+
 		// 检查旧密码是否正确
 		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.OldPassword)); err != nil {
-			c.JSON(http.StatusOK, gin.H{"code": 3, "message": "旧密码错误"})
+			utils.Error(w, http.StatusOK, "旧密码错误")
 			return
 		}
+
 		// 检查新密码是否和旧密码一致
 		if req.OldPassword == req.NewPassword {
-			c.JSON(http.StatusOK, gin.H{"code": 4, "message": "新密码不能和旧密码相同"})
+			utils.Error(w, http.StatusOK, "新密码不能和旧密码相同")
 			return
 		}
+
 		// 加密新密码
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"code": 5, "message": "新密码加密失败"})
+			utils.Error(w, http.StatusInternalServerError, "新密码加密失败")
 			return
 		}
+
 		// 更新密码
 		user.Password = string(hashedPassword)
-		db.Save(&user)
-		c.JSON(http.StatusOK, gin.H{"code": 0, "message": "密码重置成功"})
+		gormDB.Save(&user)
+
+		utils.Success(w, map[string]any{
+			"message": "密码重置成功",
+		})
 	}
 }
 
 // 获取用户信息 GET
-func GetUserInfo(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		userId := c.Param("user_id")
-		// 校验参数
+func GetUserInfo(db any) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			utils.Error(w, http.StatusMethodNotAllowed, "方法不允许")
+			return
+		}
+
+		// 从路径参数获取user_id
+		userId := utils.GetPathParam(r, 2)
 		if userId == "" {
-			c.JSON(http.StatusOK, gin.H{"code": 1, "message": "参数错误"})
+			utils.Error(w, http.StatusBadRequest, "参数错误")
 			return
 		}
+
+		gormDB := db.(*gorm.DB)
+
 		var user model.User
-		if err := db.First(&user, "id = ?", userId).Error; err != nil {
-			c.JSON(http.StatusOK, gin.H{"code": 2, "message": "用户不存在"})
+		if err := gormDB.First(&user, "id = ?", userId).Error; err != nil {
+			utils.Error(w, http.StatusOK, "用户不存在")
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"code": 0, "message": "获取用户信息成功", "user": gin.H{
-			"id":           user.Id,
-			"name":         user.Name,
-			"registeredAt": user.RegisteredAt,
-		}})
+
+		utils.Success(w, map[string]any{
+			"message": "获取用户信息成功",
+			"user": map[string]any{
+				"id":            user.Id,
+				"name":          user.Name,
+				"registered_at": user.RegisteredAt,
+			},
+		})
 	}
 }
 
 // 注销用户 DELETE
-func DeleteUser(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
+func DeleteUser(db any) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodDelete {
+			utils.Error(w, http.StatusMethodNotAllowed, "方法不允许")
+			return
+		}
+
 		var req struct {
 			Id       string `json:"id"`
 			Password string `json:"password"`
 		}
-		// 校验参数
-		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusOK, gin.H{"code": 1, "message": "参数错误"})
+
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			utils.Error(w, http.StatusBadRequest, "参数错误")
 			return
 		}
+
+		gormDB := db.(*gorm.DB)
+
 		// 检查用户是否存在
 		var user model.User
-		if err := db.First(&user, "id = ?", req.Id).Error; err != nil {
-			c.JSON(http.StatusOK, gin.H{"code": 2, "message": "用户不存在"})
+		if err := gormDB.First(&user, "id = ?", req.Id).Error; err != nil {
+			utils.Error(w, http.StatusOK, "用户不存在")
 			return
 		}
+
 		// 检查密码是否正确
 		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-			c.JSON(http.StatusOK, gin.H{"code": 3, "message": "密码错误"})
+			utils.Error(w, http.StatusOK, "密码错误")
 			return
 		}
+
 		// 启动事务
-		tx := db.Begin()
+		tx := gormDB.Begin()
+
 		// 删除用户
 		if err := tx.Delete(&user).Error; err != nil {
 			tx.Rollback()
-			c.JSON(http.StatusInternalServerError, gin.H{"code": 4, "message": "用户注销失败-删除用户失败"})
+			utils.Error(w, http.StatusInternalServerError, "用户注销失败-删除用户失败")
 			return
 		}
+
 		// 获取用户有关的所有设备ID
 		var deviceIds []string
 		if err := tx.Model(&model.Device{}).
 			Where("owner_id = ?", req.Id).
 			Pluck("id", &deviceIds).Error; err != nil {
 			tx.Rollback()
-			c.JSON(http.StatusInternalServerError, gin.H{"code": 4, "message": "用户注销失败-获取设备ID失败"})
+			utils.Error(w, http.StatusInternalServerError, "用户注销失败-获取设备ID失败")
 			return
 		}
+
 		// 删除用户所有设备状态
-		if err := tx.Where("id IN ?", deviceIds).Delete(&model.DeviceStatus{}).Error; err != nil {
-			tx.Rollback()
-			c.JSON(http.StatusInternalServerError, gin.H{"code": 4, "message": "用户注销失败-删除设备状态失败"})
-			return
+		if len(deviceIds) > 0 {
+			if err := tx.Where("id IN ?", deviceIds).Delete(&model.DeviceStatus{}).Error; err != nil {
+				tx.Rollback()
+				utils.Error(w, http.StatusInternalServerError, "用户注销失败-删除设备状态失败")
+				return
+			}
+
+			// 删除用户所有设备
+			if err := tx.Where("id IN ?", deviceIds).Delete(&model.Device{}).Error; err != nil {
+				tx.Rollback()
+				utils.Error(w, http.StatusInternalServerError, "用户注销失败-删除设备失败")
+				return
+			}
 		}
-		// 删除用户所有设备
-		if err := tx.Where("id IN ?", deviceIds).Delete(&model.Device{}).Error; err != nil {
-			tx.Rollback()
-			c.JSON(http.StatusInternalServerError, gin.H{"code": 4, "message": "用户注销失败-删除设备失败"})
-			return
-		}
+
 		// 提交事务
 		tx.Commit()
-		c.JSON(http.StatusOK, gin.H{"code": 0, "message": "用户注销成功"})
+
+		utils.Success(w, map[string]any{
+			"message": "用户注销成功",
+		})
 	}
 }
