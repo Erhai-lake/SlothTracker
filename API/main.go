@@ -21,12 +21,12 @@ func main() {
 	// 获取路由处理器
 	handler := router.SetupRouter(db)
 	Port := "8080"
-	// 启动HTTP服务器
-	if err := http.ListenAndServe(":"+Port, handler); err != nil {
-		log.Fatal("❌ 服务器启动失败: ", err)
-	}
-
 	log.Printf("🚀 服务器启动在 http://localhost:%s", Port)
 	log.Printf("💾 内存限制: %dMB", MemoryLimit/(1024*1024))
 	log.Printf("⚡ CPU核心: %d", CPUCore)
+
+	// 启动HTTP服务器
+	if err := http.ListenAndServe(":8080", handler); err != nil {
+		log.Fatal("❌ 服务器启动失败: ", err)
+	}
 }
