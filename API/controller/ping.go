@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// Ping 测试接口, 返回延迟时间
 func Ping(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()

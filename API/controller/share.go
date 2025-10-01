@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// 申请贡献 POST
+// 申请共享 POST
 func ApplyShare(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req struct {

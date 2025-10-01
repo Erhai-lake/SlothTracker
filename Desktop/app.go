@@ -3,6 +3,7 @@ package main
 import (
 	"Desktop/status"
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -10,10 +11,15 @@ import (
 )
 
 type App struct {
+	ctx context.Context
 }
 
 func NewApp() *App {
 	return &App{}
+}
+
+func (a *App) startup(ctx context.Context) {
+	a.ctx = ctx
 }
 
 func (a *App) UpdateStatus(serverUrl string, userId string, deviceId string) any {
