@@ -41,6 +41,49 @@ export default {
 			const SECONDS = String(DATE.getSeconds()).padStart(2, "0")
 			return `${YEAR}-${MONTH}-${DAY} ${HOURS}:${MINUTES}:${SECONDS}`
 		},
+		// 复制设备ID
+		copyDeviceId() {
+			if (!this.config.deviceId) {
+				this.$toast.error("设备ID为空")
+				return
+			}
+			if (navigator.clipboard && window.isSecureContext) {
+				navigator.clipboard.writeText(this.config.deviceId)
+					.then(() => {
+						this.$toast.success("设备ID已复制到剪贴板")
+					})
+					.catch((err) => {
+						console.error("复制失败:", err)
+						this.fallbackCopyTextToClipboard(this.config.deviceId)
+					})
+			} else {
+				this.fallbackCopyTextToClipboard(this.config.deviceId)
+			}
+		},
+		// 降级复制方法
+		fallbackCopyTextToClipboard(text) {
+			const TEXT_AREA = document.createElement("textarea")
+			TEXT_AREA.value = text
+			TEXT_AREA.style.position = "fixed"
+			TEXT_AREA.style.left = "-999999px"
+			TEXT_AREA.style.top = "-999999px"
+			document.body.appendChild(TEXT_AREA)
+			TEXT_AREA.focus()
+			TEXT_AREA.select()
+			try {
+				const SUCCESSFUL = document.execCommand("copy")
+				document.body.removeChild(TEXT_AREA)
+				if (SUCCESSFUL) {
+					this.$toast.success("设备ID已复制到剪贴板")
+				} else {
+					this.$toast.error("复制失败, 请手动复制")
+				}
+			} catch (err) {
+				console.error("降级复制失败:", err)
+				document.body.removeChild(TEXT_AREA)
+				this.$toast.error("复制失败, 请手动复制")
+			}
+		},
 		// 申请共享
 		async applyForSharing() {
 			if (!this.deviceId) {
@@ -167,6 +210,7 @@ export default {
 						<label>
 							我的设备ID：
 							<input v-model="config.deviceId" disabled style="color: white;"/>
+							<button @click="copyDeviceId">复制</button>
 						</label>
 					</div>
 					<div class="form-item">
@@ -180,7 +224,7 @@ export default {
 					</div>
 				</div>
 				<div class="container">
-					<div class="default" v-if="(userApplications || []).length === 0">没有设备</div>
+					<div v-if="(userApplications || []).length === 0" class="default">没有设备</div>
 					<table v-else>
 						<thead>
 						<tr>
@@ -212,7 +256,7 @@ export default {
 			</tabs-tab>
 			<tabs-tab name="sharedManagement">
 				<template #label>共享管理</template>
-				<div class="default" v-if="(shareAuthorizations || []).length === 0">没有设备</div>
+				<div v-if="(shareAuthorizations || []).length === 0" class="default">没有设备</div>
 				<table v-else>
 					<thead>
 					<tr>
@@ -243,7 +287,7 @@ export default {
 	</div>
 </template>
 
-<style scoped lang="less">
+<style lang="less" scoped>
 .share {
 	padding: 16px;
 	margin: 16px;
@@ -292,6 +336,21 @@ export default {
 
 		&[type="checkbox"] {
 			width: auto;
+		}
+	}
+
+	button {
+		padding: 8px 20px;
+		margin-left: 10px;
+		background-color: var(--primary-color, #80ceff);
+		color: white;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		white-space: nowrap;
+
+		&:hover {
+			background-color: #66b1ff;
 		}
 	}
 }

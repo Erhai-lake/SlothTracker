@@ -72,7 +72,6 @@ export default {
 			if (window.go) {
 				this.refreshInterval = Number(this.config.refreshInterval) || -1
 				const RES = await window.go.main.App.UpdateStatus(this.config.serverUrl, this.config.userId, this.config.deviceId)
-				console.log(RES)
 				if (!RES.success) {
 					this.$toast.error(RES.data.message)
 					return

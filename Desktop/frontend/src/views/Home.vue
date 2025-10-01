@@ -113,19 +113,6 @@ export default {
 				console.error(error)
 				this.$toast.error("获取设备信息错误")
 			}
-		},
-		// 获取设备类型标签
-		getDeviceType(deviceId) {
-			const IS_ACCOUNT_DEVICE = this.accountDevices.some(device => device.id === deviceId)
-			const IS_SHARE_DEVICE = this.shareDevices.some(device => device.id === deviceId)
-			if (IS_ACCOUNT_DEVICE && IS_SHARE_DEVICE) {
-				return "账户 & 共享"
-			} else if (IS_ACCOUNT_DEVICE) {
-				return "账户设备"
-			} else if (IS_SHARE_DEVICE) {
-				return "共享设备"
-			}
-			return "未知"
 		}
 	}
 }
@@ -143,9 +130,9 @@ export default {
 						:key="item.id"
 						:to="'/device/' + item.id"
 						class="container">
-						<p :title="device.name">{{ device.name }}</p>
-						<p :title="device.platform">{{ device.platform }}</p>
-						<p :title="device.description">{{ device.description }}</p>
+						<p :title="item.name">{{ item.name }}</p>
+						<p :title="item.platform">{{ item.platform }}</p>
+						<p :title="item.description">{{ item.description }}</p>
 					</router-link>
 				</div>
 			</tabs-tab>
