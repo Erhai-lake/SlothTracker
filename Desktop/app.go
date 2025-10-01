@@ -23,7 +23,7 @@ func (a *App) startup(ctx context.Context) {
 }
 
 func (a *App) UpdateStatus(serverUrl string, userId string, deviceId string) any {
-	url := fmt.Sprintf("%s/api/status/update/%s/%s", serverUrl, userId, deviceId)
+	url := fmt.Sprintf("%s/api/status/update?user_id=%s&device_id=%s", serverUrl, userId, deviceId)
 	// 获取电池信息
 	batteryInfo, err := status.GetBatteryInfo()
 	if err != nil {

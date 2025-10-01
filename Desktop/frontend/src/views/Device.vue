@@ -69,7 +69,7 @@ export default {
 					}
 				})
 				// 原始数据
-				ORIGINAL.innerHTML = JSON.stringify(RES.data.data, null, 2)
+				ORIGINAL.innerHTML = JSON.stringify(RES.data.data.status, null, 2)
 				if (!RES.data.success) {
 					this.$toast.error(RES.data.data.message)
 					return
