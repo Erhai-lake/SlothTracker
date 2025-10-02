@@ -86,10 +86,12 @@ export default {
 			this.initConfig()
 			if (window.go) {
 				this.refreshInterval = Number(this.config.refreshInterval) || -1
-				const RES = await window.go.main.App.UpdateStatus(this.config.serverUrl, this.config.userId, this.config.deviceId)
-				if (!RES.success) {
-					this.$toast.error(RES.data.message)
-					return
+				if (this.config.serverUrl && this.config.userId && this.config.deviceId) {
+					const RES = await window.go.main.App.UpdateStatus(this.config.serverUrl, this.config.userId, this.config.deviceId)
+					if (!RES.success) {
+						this.$toast.error(RES.data.message)
+						return
+					}
 				}
 				EventBus.emit("refresh")
 			} else {
