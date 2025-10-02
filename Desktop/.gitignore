@@ -4,3 +4,4 @@ frontend/dist
 frontend/package-lock.json
 frontend/package.json
 frontend/package.json.md5
+sloth-tracker.log

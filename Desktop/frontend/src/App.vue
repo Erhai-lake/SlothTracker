@@ -95,7 +95,6 @@ export default {
 			<router-link to="/" class="nav-item">首页</router-link>
 			<router-link to="/share" class="nav-item">共享</router-link>
 			<router-link to="/config" class="nav-item">设置</router-link>
-			<router-link to="/about" class="nav-item">关于</router-link>
 			<div class="spacer"></div>
 			<div class="nav-item clickable" @click="refreshBackground">背景</div>
 			<div class="nav-item clickable" @click="refresh">刷新</div>
@@ -131,7 +130,7 @@ export default {
 	box-shadow: rgba(142, 142, 142, 0.2) 0 6px 15px 0;
 	display: grid;
 	grid-template-columns: 1fr;
-	grid-template-rows: auto auto auto auto 1fr auto auto auto;
+	grid-template-rows: auto auto auto 1fr auto auto auto;
 	gap: 16px;
 	text-align: center;
 	overflow: hidden;

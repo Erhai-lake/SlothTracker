@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
+	"syscall"
 	"time"
 	"unicode/utf8"
 
@@ -143,6 +144,10 @@ func tryDecodeSSIDHex(s string) string {
 func getWindowsWifiInfo() (*NetworkStatus, error) {
 	// 获取当前连接的SSID
 	cmd := exec.Command("netsh", "wlan", "show", "interfaces")
+	// 隐藏 CMD 窗口 (Windows)
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		HideWindow: true,
+	}
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return nil, err

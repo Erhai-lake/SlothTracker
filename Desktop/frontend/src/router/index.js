@@ -25,11 +25,6 @@ const routes = [
         path: "/init",
         name: "Initialization",
         component: () => import("../views/Initialization.vue")
-    },
-    {
-        path: "/about",
-        name: "About",
-        component: () => import("../views/About.vue")
     }
 ]
 
