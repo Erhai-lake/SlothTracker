@@ -183,7 +183,6 @@ export default {
 <style lang="less" scoped>
 .home {
 	padding: 16px;
-	margin: 16px;
 	background-color: rgba(0, 0, 0, 0.4);
 	backdrop-filter: blur(5px);
 	border: 1px solid var(--border-color);

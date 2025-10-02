@@ -20,7 +20,12 @@ export default {
 			interval: null,
 			config: {},
 			refreshInterval: 0,
-			backgroundUrl: "https://www.loliapi.com/acg"
+			backgroundUrl: "https://www.loliapi.com/acg",
+			isDragging: false,
+			dragStartX: 0,
+			dragStartY: 0,
+			windowStartX: 0,
+			windowStartY: 0
 		}
 	},
 	mounted() {
@@ -47,8 +52,18 @@ export default {
 		if (this.interval) {
 			clearInterval(this.interval)
 		}
+		this.removeDragListeners()
 	},
 	methods: {
+		minimizeWindow() {
+			window.runtime.WindowMinimise()
+		},
+		maximizeWindow() {
+			window.runtime.WindowToggleMaximise()
+		},
+		hideWindow() {
+			window.runtime.WindowHide()
+		},
 		initConfig() {
 			const CONFIG = JSON.parse(localStorage.getItem("config"))
 			const REQUIRED_FIELDS = ["serverUrl", "refreshInterval", "userId", "deviceId"]
@@ -84,6 +99,48 @@ export default {
 		}, 500),
 		sidebarOpen(open) {
 			this.sidebar = open
+		},
+		startDrag(event) {
+			this.isDragging = true
+			this.dragStartX = event.clientX
+			this.dragStartY = event.clientY
+			// 添加事件监听器
+			this.addDragListeners()
+			// 阻止文本选择
+			event.preventDefault()
+		},
+		onDrag(event) {
+			if (!this.isDragging) return
+			const DELTA_X = event.clientX - this.dragStartX
+			const DELTA_Y = event.clientY - this.dragStartY
+			if (window.runtime && window.runtime.WindowSetPosition) {
+				requestAnimationFrame(() => {
+					window.runtime.WindowGetPosition().then(position => {
+						const NEW_X = position.x + DELTA_X
+						const NEW_Y = position.y + DELTA_Y
+						window.runtime.WindowSetPosition(NEW_X, NEW_Y)
+					})
+				})
+			}
+			// 更新起始位置为当前位置
+			this.dragStartX = event.clientX
+			this.dragStartY = event.clientY
+		},
+		endDrag() {
+			this.isDragging = false
+			this.removeDragListeners()
+		},
+		addDragListeners() {
+			document.addEventListener("mousemove", this.onDrag)
+			document.addEventListener("mouseup", this.endDrag)
+		},
+		removeDragListeners() {
+			document.removeEventListener("mousemove", this.onDrag)
+			document.removeEventListener("mouseup", this.endDrag)
+		},
+		// 双击最大化/还原
+		handleDoubleClick() {
+			this.maximizeWindow()
 		}
 	}
 }
@@ -91,32 +148,84 @@ export default {
 
 <template>
 	<div class="app">
-		<div class="sidebar-container" v-if="sidebar">
-			<router-link to="/" class="nav-item">首页</router-link>
-			<router-link to="/share" class="nav-item">共享</router-link>
-			<router-link to="/config" class="nav-item">设置</router-link>
+		<div v-if="sidebar" class="sidebar-container">
+			<router-link class="nav-item" to="/">首页</router-link>
+			<router-link class="nav-item" to="/share">共享</router-link>
+			<router-link class="nav-item" to="/config">设置</router-link>
 			<div class="spacer"></div>
 			<div class="nav-item clickable" @click="refreshBackground">背景</div>
 			<div class="nav-item clickable" @click="refresh">刷新</div>
 			<div class="nav-item status">{{ refreshInterval === -1 ? "禁用" : refreshInterval }}</div>
 		</div>
-		<div class="view">
-			<router-view/>
+		<div v-else></div>
+		<div class="container">
+			<div class="window-controls" @dblclick="handleDoubleClick" @mousedown="startDrag">
+				<div></div>
+				<div>
+					<button class="control-btn minimize" @click="minimizeWindow">−</button>
+					<button class="control-btn maximize" @click="maximizeWindow">□</button>
+					<button class="control-btn close" @click="hideWindow">×</button>
+				</div>
+			</div>
+			<div class="view">
+				<router-view/>
+			</div>
 		</div>
 		<div
-			class="images images1" v-if="config.background"
-			:style="{ backgroundImage: `url(${backgroundUrl})` }">
+			v-if="config.background" :style="{ backgroundImage: `url(${backgroundUrl})` }"
+			class="images images1">
 		</div>
-		<div class="images images2" v-if="config.background"></div>
+		<div v-if="config.background" class="images images2"></div>
 	</div>
 </template>
 
-<style scoped lang="less">
+<style lang="less" scoped>
 .app {
 	width: 100%;
 	height: 100vh;
-	display: flex;
+	display: grid;
+	grid-template-columns: auto 1fr;
 	overflow: hidden;
+}
+
+.window-controls {
+	padding: 10px;
+	margin: 10px;
+	display: grid;
+	grid-template-columns: 1fr auto;
+	border-radius: 10px;
+	background-color: rgba(0, 0, 0, 0.4);
+	backdrop-filter: blur(5px);
+	border-right: 1px solid var(--border-color);
+	box-shadow: rgba(142, 142, 142, 0.2) 0 6px 15px 0;
+	z-index: 3;
+
+	.control-btn {
+		width: 30px;
+		height: 30px;
+		border: none;
+		background: rgba(255, 255, 255, 0.1);
+		color: white;
+		cursor: pointer;
+		margin-left: 5px;
+		border-radius: 3px;
+		font-size: 14px;
+		font-weight: bold;
+	}
+
+	.control-btn:hover {
+		background: rgba(255, 255, 255, 0.2);
+	}
+
+	.control-btn.close:hover {
+		background: #ff5f57;
+	}
+}
+
+.container {
+	display: grid;
+	grid-template-rows: auto 1fr;
+	overflow: auto;
 }
 
 .sidebar-container {
@@ -175,7 +284,8 @@ export default {
 }
 
 .view {
-	width: 100%;
+	margin: 0 10px;
+	box-sizing: border-box;
 	height: 100%;
 	overflow: auto;
 	z-index: 3;

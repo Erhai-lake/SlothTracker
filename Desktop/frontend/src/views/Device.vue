@@ -345,12 +345,7 @@ export default {
 </template>
 
 <style scoped>
-.device {
-	padding: 16px;
-}
-
 h1 {
-	margin: 0 16px;
 	background-color: rgba(0, 0, 0, 0.4);
 	backdrop-filter: blur(5px);
 	border: 1px solid var(--border-color);
@@ -364,7 +359,7 @@ h1 {
 }
 
 .status-grid {
-	padding: 16px;
+	padding: 16px 0;
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(410px, 1fr));
 	gap: 15px;
@@ -410,6 +405,6 @@ h1 {
 }
 
 .code {
-	margin: 0 16px;
+	margin-bottom: 16px;
 }
 </style>

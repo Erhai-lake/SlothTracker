@@ -8,20 +8,73 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type App struct {
-	ctx context.Context
+	ctx  context.Context
+	tray *TrayManager
 }
 
 func NewApp() *App {
-	return &App{}
+	app := &App{}
+	app.tray = NewTrayManager(app)
+	return app
 }
 
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+	a.tray.Startup(ctx)
+	a.tray.StartTray()
+	log.Println("应用启动完成, 托盘已初始化")
 }
 
+// 显示主窗口
+func (a *App) ShowWindow() {
+	if a.ctx != nil {
+		runtime.WindowShow(a.ctx)
+		runtime.WindowCenter(a.ctx)
+	}
+}
+
+// 隐藏主窗口
+func (a *App) HideWindow() {
+	if a.ctx != nil {
+		runtime.WindowHide(a.ctx)
+	}
+}
+
+// 最小化窗口
+func (a *App) WindowMinimize() {
+	if a.ctx != nil {
+		runtime.WindowMinimise(a.ctx)
+	}
+}
+
+// 切换最大化/还原
+func (a *App) WindowToggleMaximize() {
+	if a.ctx != nil {
+		runtime.WindowToggleMaximise(a.ctx)
+	}
+}
+
+// 获取窗口位置 - 修正返回值
+func (a *App) WindowGetPosition() (int, int) {
+	if a.ctx != nil {
+		return runtime.WindowGetPosition(a.ctx)
+	}
+	return 0, 0
+}
+
+// 设置窗口位置
+func (a *App) WindowSetPosition(x, y int) {
+	if a.ctx != nil {
+		runtime.WindowSetPosition(a.ctx, x, y)
+	}
+}
+
+// 更新设备状态
 func (a *App) UpdateStatus(serverUrl string, userId string, deviceId string) any {
 	url := fmt.Sprintf("%s/api/status/update?user_id=%s&device_id=%s", serverUrl, userId, deviceId)
 	// 获取电池信息
