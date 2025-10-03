@@ -167,6 +167,7 @@ export default {
 					<button class="control-btn close" @click="hideWindow">×</button>
 				</div>
 			</div>
+			<div v-if="!go"></div>
 			<div class="view">
 				<router-view/>
 			</div>
