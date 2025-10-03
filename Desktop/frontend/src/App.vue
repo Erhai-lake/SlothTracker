@@ -34,17 +34,15 @@ export default {
 		EventBus.on("sidebarOpen", this.sidebarOpen)
 		if (!window.go) {
 			this.$toast.warning("非客户端环境无法同步设备状态!")
-			this.refresh()
-		} else {
-			this.interval = setInterval(() => {
-				if (this.refreshInterval === -1) return
-				if (this.refreshInterval > 0) {
-					this.refreshInterval--
-				} else {
-					this.refresh()
-				}
-			}, 1000)
 		}
+		this.interval = setInterval(() => {
+			if (this.refreshInterval === -1) return
+			if (this.refreshInterval > 0) {
+				this.refreshInterval--
+			} else {
+				this.refresh()
+			}
+		}, 1000)
 	},
 	beforeUnmount() {
 		EventBus.off("initConfig", this.initConfig)
@@ -84,8 +82,8 @@ export default {
 		}, 1000),
 		refresh: debounce(async function () {
 			this.initConfig()
+			this.refreshInterval = Number(this.config.refreshInterval) || -1
 			if (window.go) {
-				this.refreshInterval = Number(this.config.refreshInterval) || -1
 				if (this.config.serverUrl && this.config.userId && this.config.deviceId) {
 					const RES = await window.go.main.App.UpdateStatus(this.config.serverUrl, this.config.userId, this.config.deviceId)
 					if (!RES.success) {
@@ -96,7 +94,6 @@ export default {
 				EventBus.emit("refresh")
 			} else {
 				EventBus.emit("refresh")
-				this.refreshInterval = -1
 			}
 		}, 500),
 		sidebarOpen(open) {
