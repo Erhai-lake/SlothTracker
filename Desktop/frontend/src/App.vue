@@ -19,6 +19,7 @@ export default {
 			sidebar: true,
 			interval: null,
 			config: {},
+			go: window.go,
 			refreshInterval: 0,
 			backgroundUrl: "https://www.loliapi.com/acg",
 			isDragging: false,
@@ -32,7 +33,7 @@ export default {
 		document.addEventListener("contextmenu", event => event.preventDefault())
 		EventBus.on("initConfig", this.initConfig)
 		EventBus.on("sidebarOpen", this.sidebarOpen)
-		if (!window.go) {
+		if (!this.go) {
 			this.$toast.warning("非客户端环境无法同步设备状态!")
 		}
 		this.interval = setInterval(() => {
@@ -83,9 +84,9 @@ export default {
 		refresh: debounce(async function () {
 			this.initConfig()
 			this.refreshInterval = Number(this.config.refreshInterval) || -1
-			if (window.go) {
+			if (this.go) {
 				if (this.config.serverUrl && this.config.userId && this.config.deviceId) {
-					const RES = await window.go.main.App.UpdateStatus(this.config.serverUrl, this.config.userId, this.config.deviceId)
+					const RES = await this.go.main.App.UpdateStatus(this.config.serverUrl, this.config.userId, this.config.deviceId)
 					if (!RES.success) {
 						this.$toast.error(RES.data.message)
 						return
@@ -158,7 +159,7 @@ export default {
 		</div>
 		<div v-else></div>
 		<div class="container">
-			<div class="window-controls" @dblclick="handleDoubleClick" @mousedown="startDrag">
+			<div class="window-controls" v-if="go" @dblclick="handleDoubleClick" @mousedown="startDrag">
 				<div></div>
 				<div>
 					<button class="control-btn minimize" @click="minimizeWindow">−</button>
